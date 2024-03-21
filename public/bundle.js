@@ -14675,65 +14675,47 @@ Please use another name.` );
 	} ;
 	var Box$1 = Box;
 
-	const FIRE_BUTTON_RADIUS = 100;
-	const JOYSTICK_RADIUS = 119;
-	const JOYSTICK_THROTTLE_RADIUS = 68.25;
-	const MAX_JOYSTICK_DISTANCE = 50;
-	const BOOST_BUTTON_RADIUS = 33.85;
-	const MINUS_BUTTON_RADIUS = 13;
-	const PLUS_BUTTON_RADIUS = 13;
-	const LEAVE_ICON_RADIUS = 9;
-	let interval;
+	const MAX_JOYSTICK_DISTANCE = 70;
 	function App() {
 	  const [joystickCenter, setJoystickCenter] = reactExports.useState({
 	    x: 0,
 	    y: 0
 	  });
 	  const joystickCenterRef = reactExports.useRef(joystickCenter);
-	  const [fireButtonCenter, setFireButtonCenter] = reactExports.useState({
+	  const [circleCenter, setCircleCenter] = reactExports.useState({
 	    x: 0,
 	    y: 0
 	  });
-	  const fireButtonCenterRef = reactExports.useRef(fireButtonCenter);
-	  const [boostButtonCenter, setBoostButtonCenter] = reactExports.useState({
+	  const circleCenterRef = reactExports.useRef(circleCenter);
+	  const [triangleCenter, setTriangleCenter] = reactExports.useState({
 	    x: 0,
 	    y: 0
 	  });
-	  const boostButtonCenterRef = reactExports.useRef(boostButtonCenter);
-	  const [minusCenter, setMinusCenter] = reactExports.useState({
+	  const triangleCenterRef = reactExports.useRef(triangleCenter);
+	  const [homeCenter, setHomeCenter] = reactExports.useState({
 	    x: 0,
 	    y: 0
 	  });
-	  const minusCenterRef = reactExports.useRef(minusCenter);
+	  const homeCenterRef = reactExports.useRef(homeCenter);
 	  const [plusCenter, setPlusCenter] = reactExports.useState({
 	    x: 0,
 	    y: 0
 	  });
 	  const plusCenterRef = reactExports.useRef(plusCenter);
-	  const [leaveIconCenter, setLeaveIconCenter] = reactExports.useState({
-	    x: 0,
-	    y: 0
-	  });
-	  const leaveIconCenterRef = reactExports.useRef(leaveIconCenter);
 	  const [joystickState, setJoystickState] = reactExports.useState({
 	    x: 0,
 	    y: 0,
 	    id: null
 	  });
 	  const joystickStateRef = reactExports.useRef(joystickState);
-	  const [fireState, setFireState] = reactExports.useState({
-	    id: null,
-	    active: false
-	  });
-	  const fireStateRef = reactExports.useRef(fireState);
-	  const [boostPressed, setBoostPressed] = reactExports.useState(null);
-	  const boostPressedRef = reactExports.useRef(boostPressed);
-	  const [minusPressed, setMinusPressed] = reactExports.useState(null);
-	  const minusPressedRef = reactExports.useRef(minusPressed);
-	  const [plusPressed, setPlusPressed] = reactExports.useState(null);
-	  const plusPressedRef = reactExports.useRef(plusPressed);
-	  const [percentBoost, setPercentBoost] = reactExports.useState(100);
-	  const percentBoostRef = reactExports.useRef(percentBoost);
+	  const [circleState, setCircleState] = reactExports.useState(null);
+	  const circleStateRef = reactExports.useRef(circleState);
+	  const [triangleState, setTriangleState] = reactExports.useState(null);
+	  const triangleStateRef = reactExports.useRef(triangleState);
+	  const [homeState, setHomeState] = reactExports.useState(null);
+	  const homeStateRef = reactExports.useRef(homeState);
+	  const [plusState, setPlusState] = reactExports.useState(null);
+	  const plusStateRef = reactExports.useRef(plusState);
 	  function sendMessageToParent(message) {
 	    window.ReactNativeWebView.postMessage(message);
 	  }
@@ -14782,80 +14764,62 @@ Please use another name.` );
 	    };
 	  }, []);
 	  reactExports.useEffect(() => {
-	    const controllerStateString = `${joystickState.x},${joystickState.y},${fireState.active ? 1 : 0},${boostPressed !== null ? 1 : 0},${percentBoost},${minusPressed !== null ? 1 : 0},${plusPressed !== null ? 1 : 0}`;
+	    const controllerState = {
+	      joystick: {
+	        x: joystickState.x,
+	        y: joystickState.y
+	      },
+	      circle: circleState !== null,
+	      triangle: triangleState !== null,
+	      plus: plusState !== null
+	    };
 	    sendMessageToParent(JSON.stringify({
-	      name: 'move',
-	      move: controllerStateString
+	      name: 'controller-state',
+	      state: JSON.stringify(controllerState)
 	    }));
-	  }, [joystickState, fireState, boostPressed, minusPressed, plusPressed]);
-	  reactExports.useEffect(() => {
-	    if (boostPressed !== null) {
-	      clearInterval(interval);
-	      setPercentBoost(0);
-	      percentBoostRef.current = 0;
-	    } else if (percentBoost === 0) {
-	      const maxCount = 100;
-	      let count = 0;
-	      interval = setInterval(() => {
-	        count++;
-	        setPercentBoost(count);
-	        percentBoostRef.current = count;
-	        if (count === maxCount) {
-	          clearInterval(interval);
-	        }
-	      }, 100);
-	    }
-	  }, [percentBoost, boostPressed]);
+	  }, [joystickState, circleState, triangleState, plusState]);
 	  const setCenters = () => {
 	    const screenWidth = window.innerWidth;
 	    const screenHeight = window.innerHeight;
-	    setFireButtonCenter({
-	      x: screenWidth - 100 - FIRE_BUTTON_RADIUS,
-	      y: screenHeight - 110 - FIRE_BUTTON_RADIUS
-	    });
-	    fireButtonCenterRef.current = {
-	      x: screenWidth - 100 - FIRE_BUTTON_RADIUS,
-	      y: screenHeight - 110 - FIRE_BUTTON_RADIUS
-	    };
 	    setJoystickCenter({
-	      x: 100 + JOYSTICK_RADIUS,
-	      y: screenHeight - 76 - JOYSTICK_RADIUS
+	      x: 200,
+	      y: screenHeight - 195
 	    });
 	    joystickCenterRef.current = {
-	      x: 100 + JOYSTICK_RADIUS,
-	      y: screenHeight - 76 - JOYSTICK_RADIUS
+	      x: 200,
+	      y: screenHeight - 195
 	    };
-	    setBoostButtonCenter({
-	      x: screenWidth - 100 - FIRE_BUTTON_RADIUS * 2 - BOOST_BUTTON_RADIUS,
-	      y: screenHeight - 91
+	    setCircleCenter({
+	      x: screenWidth - 266,
+	      y: screenHeight - 129
 	    });
-	    boostButtonCenterRef.current = {
-	      x: screenWidth - 100 - FIRE_BUTTON_RADIUS * 2 - BOOST_BUTTON_RADIUS,
-	      y: screenHeight - 91
+	    circleCenterRef.current = {
+	      x: screenWidth - 266,
+	      y: screenHeight - 129
 	    };
-	    setMinusCenter({
-	      x: 50 + MINUS_BUTTON_RADIUS,
-	      y: 30 + 4.5
+	    setTriangleCenter({
+	      x: screenWidth - 134,
+	      y: screenHeight - 261
 	    });
-	    minusCenterRef.current = {
-	      x: 50 + MINUS_BUTTON_RADIUS,
-	      y: 30 + 4.5
+	    triangleCenterRef.current = {
+	      x: screenWidth - 134,
+	      y: screenHeight - 261
+	    };
+	    setHomeCenter({
+	      x: screenWidth / 2,
+	      y: screenHeight - 227.27
+	    });
+	    homeCenterRef.current = {
+	      x: screenWidth / 2,
+	      y: screenHeight - 227.27
 	    };
 	    setPlusCenter({
-	      x: screenWidth - 50 - PLUS_BUTTON_RADIUS,
-	      y: 30 + PLUS_BUTTON_RADIUS
+	      x: screenWidth / 2,
+	      y: screenHeight - 163.09
 	    });
 	    plusCenterRef.current = {
-	      x: screenWidth - 50 - PLUS_BUTTON_RADIUS,
-	      y: 30 + PLUS_BUTTON_RADIUS
-	    };
-	    setLeaveIconCenter({
 	      x: screenWidth / 2,
-	      y: 78 + LEAVE_ICON_RADIUS
-	    });
-	    leaveIconCenterRef.current = {
-	      x: screenWidth / 2,
-	      y: 78 + LEAVE_ICON_RADIUS
+	      y: screenHeight - 163.09
 	    };
 	  };
 	  const onTouchStart = e => {
@@ -14865,21 +14829,16 @@ Please use another name.` );
 	    for (let touch of changedTouches) {
 	      const x = touch.x;
 	      const y = touch.y;
-	      if (Math.sqrt(Math.pow(x - leaveIconCenterRef.current.x, 2) + Math.pow(y - leaveIconCenterRef.current.y, 2)) <= LEAVE_ICON_RADIUS + 5) {
-	        sendMessageToParent(JSON.stringify({
-	          name: 'exit-confirmation'
-	        }));
-	      }
 	      if (joystickStateRef.current.id === null) {
-	        if (Math.sqrt(Math.pow(x - joystickCenterRef.current.x, 2) + Math.pow(y - joystickCenterRef.current.y, 2)) <= JOYSTICK_THROTTLE_RADIUS) {
+	        if (Math.sqrt(Math.pow(x - joystickCenterRef.current.x, 2) + Math.pow(y - joystickCenterRef.current.y, 2)) <= 70) {
 	          setJoystickState({
-	            x: Math.round((x - joystickCenterRef.current.x) / JOYSTICK_RADIUS * 100),
-	            y: Math.round((joystickCenterRef.current.y - y) / JOYSTICK_RADIUS * 100),
+	            x: Math.round((x - joystickCenterRef.current.x) / MAX_JOYSTICK_DISTANCE * 100),
+	            y: Math.round((joystickCenterRef.current.y - y) / 137 * 100),
 	            id: touch.id
 	          });
 	          joystickStateRef.current = {
-	            x: Math.round((x - joystickCenterRef.current.x) / JOYSTICK_RADIUS * 100),
-	            y: Math.round((joystickCenterRef.current.y - y) / JOYSTICK_RADIUS * 100),
+	            x: Math.round((x - joystickCenterRef.current.x) / MAX_JOYSTICK_DISTANCE * 100),
+	            y: Math.round((joystickCenterRef.current.y - y) / 137 * 100),
 	            id: touch.id
 	          };
 	          sendMessageToParent(JSON.stringify({
@@ -14888,46 +14847,40 @@ Please use another name.` );
 	          }));
 	        }
 	      }
-	      if (fireStateRef.current.id === null) {
-	        if (Math.sqrt(Math.pow(x - fireButtonCenterRef.current.x, 2) + Math.pow(y - fireButtonCenterRef.current.y, 2)) <= FIRE_BUTTON_RADIUS) {
-	          setFireState({
-	            id: touch.id,
-	            active: true
-	          });
-	          fireStateRef.current = {
-	            id: touch.id,
-	            active: true
-	          };
+	      if (circleStateRef.current === null) {
+	        if (Math.sqrt(Math.pow(x - circleCenterRef.current.x, 2) + Math.pow(y - circleCenterRef.current.y, 2)) <= 71) {
+	          setCircleState(touch.id);
+	          circleStateRef.current = touch.id;
 	          sendMessageToParent(JSON.stringify({
 	            name: 'haptic',
 	            type: 'medium'
 	          }));
 	        }
 	      }
-	      if (boostPressedRef.current === null) {
-	        if (Math.sqrt(Math.pow(x - boostButtonCenterRef.current.x, 2) + Math.pow(y - boostButtonCenterRef.current.y, 2)) <= BOOST_BUTTON_RADIUS + 10) {
-	          setBoostPressed(touch.id);
-	          boostPressedRef.current = touch.id;
+	      if (triangleStateRef.current === null) {
+	        if (Math.sqrt(Math.pow(x - triangleCenterRef.current.x, 2) + Math.pow(y - triangleCenterRef.current.y, 2)) <= 71) {
+	          setTriangleState(touch.id);
+	          triangleStateRef.current = touch.id;
 	          sendMessageToParent(JSON.stringify({
 	            name: 'haptic',
 	            type: 'medium'
 	          }));
 	        }
 	      }
-	      if (minusPressedRef.current === null) {
-	        if (Math.sqrt(Math.pow(x - minusCenterRef.current.x, 2) + Math.pow(y - minusCenterRef.current.y, 2)) <= MINUS_BUTTON_RADIUS + 10) {
-	          setMinusPressed(touch.id);
-	          minusPressedRef.current = touch.id;
+	      if (homeStateRef.current === null) {
+	        if (Math.sqrt(Math.pow(x - homeCenterRef.current.x, 2) + Math.pow(y - homeCenterRef.current.y, 2)) <= 23) {
+	          setHomeState(touch.id);
+	          homeStateRef.current = touch.id;
 	          sendMessageToParent(JSON.stringify({
 	            name: 'haptic',
 	            type: 'light'
 	          }));
 	        }
 	      }
-	      if (plusPressedRef.current === null) {
-	        if (Math.sqrt(Math.pow(x - plusCenterRef.current.x, 2) + Math.pow(y - plusCenterRef.current.y, 2)) <= PLUS_BUTTON_RADIUS + 10) {
-	          setPlusPressed(touch.id);
-	          plusPressedRef.current = touch.id;
+	      if (plusStateRef.current === null) {
+	        if (Math.sqrt(Math.pow(x - plusCenterRef.current.x, 2) + Math.pow(y - plusCenterRef.current.y, 2)) <= 23) {
+	          setPlusState(touch.id);
+	          plusStateRef.current = touch.id;
 	          sendMessageToParent(JSON.stringify({
 	            name: 'haptic',
 	            type: 'light'
@@ -14941,37 +14894,13 @@ Please use another name.` );
 	      changedTouches
 	    } = e;
 	    for (let touch of changedTouches) {
-	      if (fireStateRef.current.id === touch.id) {
-	        if (!fireStateRef.current.active && Math.sqrt(Math.pow(touch.x - fireButtonCenterRef.current.x, 2) + Math.pow(touch.y - fireButtonCenterRef.current.y, 2)) <= FIRE_BUTTON_RADIUS) {
-	          setFireState({
-	            id: touch.id,
-	            active: true
-	          });
-	          fireStateRef.current = {
-	            id: touch.id,
-	            active: true
-	          };
-	          sendMessageToParent(JSON.stringify({
-	            name: 'haptic',
-	            type: 'medium'
-	          }));
-	        } else if (fireStateRef.current.active && Math.sqrt(Math.pow(touch.x - fireButtonCenterRef.current.x, 2) + Math.pow(touch.y - fireButtonCenterRef.current.y, 2)) > FIRE_BUTTON_RADIUS) {
-	          setFireState({
-	            id: touch.id,
-	            active: false
-	          });
-	          fireStateRef.current = {
-	            id: touch.id,
-	            active: false
-	          };
-	        }
-	      } else if (joystickStateRef.current.id === touch.id) {
+	      if (joystickStateRef.current.id === touch.id) {
 	        const x = touch.x - joystickCenterRef.current.x;
 	        const y = joystickCenterRef.current.y - touch.y;
 	        const angle = Math.atan2(y, x);
-	        const distance = Math.min(MAX_JOYSTICK_DISTANCE, Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)));
-	        const newX = Math.round(Math.cos(angle) * distance / MAX_JOYSTICK_DISTANCE * 100);
-	        const newY = Math.round(Math.sin(angle) * distance / MAX_JOYSTICK_DISTANCE * 100);
+	        const distance = Math.min(50, Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)));
+	        const newX = Math.round(Math.cos(angle) * distance / 50 * 100);
+	        const newY = Math.round(Math.sin(angle) * distance / 50 * 100);
 	        setJoystickState({
 	          x: newX,
 	          y: newY,
@@ -14982,39 +14911,51 @@ Please use another name.` );
 	          y: newY,
 	          id: touch.id
 	        };
-	      }
-	      if (boostPressedRef.current === touch.id && Math.sqrt(Math.pow(touch.x - boostButtonCenterRef.current.x, 2) + Math.pow(touch.y - boostButtonCenterRef.current.y, 2)) > BOOST_BUTTON_RADIUS + 10) {
-	        setBoostPressed(null);
-	        boostPressedRef.current = null;
-	      } else if (boostPressedRef.current === null && Math.sqrt(Math.pow(touch.x - boostButtonCenterRef.current.x, 2) + Math.pow(touch.y - boostButtonCenterRef.current.y, 2)) <= BOOST_BUTTON_RADIUS + 10) {
-	        setBoostPressed(touch.id);
-	        boostPressedRef.current = touch.id;
-	        sendMessageToParent(JSON.stringify({
-	          name: 'haptic',
-	          type: 'medium'
-	        }));
-	      }
-	      if (minusPressedRef.current === touch.id && Math.sqrt(Math.pow(touch.x - minusCenterRef.current.x, 2) + Math.pow(touch.y - minusCenterRef.current.y, 2)) > MINUS_BUTTON_RADIUS + 10) {
-	        setMinusPressed(null);
-	        minusPressedRef.current = null;
-	      } else if (minusPressedRef.current === null && Math.sqrt(Math.pow(touch.x - minusCenterRef.current.x, 2) + Math.pow(touch.y - minusCenterRef.current.y, 2)) <= MINUS_BUTTON_RADIUS + 10) {
-	        setMinusPressed(touch.id);
-	        minusPressedRef.current = touch.id;
-	        sendMessageToParent(JSON.stringify({
-	          name: 'haptic',
-	          type: 'light'
-	        }));
-	      }
-	      if (plusPressedRef.current === touch.id && Math.sqrt(Math.pow(touch.x - plusCenterRef.current.x, 2) + Math.pow(touch.y - plusCenterRef.current.y, 2)) > PLUS_BUTTON_RADIUS + 10) {
-	        setPlusPressed(null);
-	        plusPressedRef.current = null;
-	      } else if (plusPressedRef.current === null && Math.sqrt(Math.pow(touch.x - plusCenterRef.current.x, 2) + Math.pow(touch.y - plusCenterRef.current.y, 2)) <= PLUS_BUTTON_RADIUS + 10) {
-	        setPlusPressed(touch.id);
-	        plusPressedRef.current = touch.id;
-	        sendMessageToParent(JSON.stringify({
-	          name: 'haptic',
-	          type: 'light'
-	        }));
+	      } else {
+	        if (circleStateRef.current === touch.id && Math.sqrt(Math.pow(touch.x - circleCenterRef.current.x, 2) + Math.pow(touch.y - circleCenterRef.current.y, 2)) > 71) {
+	          setCircleState(null);
+	          circleStateRef.current = null;
+	        } else if (circleStateRef.current === null && Math.sqrt(Math.pow(touch.x - circleCenterRef.current.x, 2) + Math.pow(touch.y - circleCenterRef.current.y, 2)) <= 71) {
+	          setCircleState(touch.id);
+	          circleStateRef.current = touch.id;
+	          sendMessageToParent(JSON.stringify({
+	            name: 'haptic',
+	            type: 'medium'
+	          }));
+	        }
+	        if (triangleStateRef.current === touch.id && Math.sqrt(Math.pow(touch.x - triangleCenterRef.current.x, 2) + Math.pow(touch.y - triangleCenterRef.current.y, 2)) > 71) {
+	          setTriangleState(null);
+	          triangleStateRef.current = null;
+	        } else if (triangleStateRef.current === null && Math.sqrt(Math.pow(touch.x - triangleCenterRef.current.x, 2) + Math.pow(touch.y - triangleCenterRef.current.y, 2)) <= 71) {
+	          setTriangleState(touch.id);
+	          triangleStateRef.current = touch.id;
+	          sendMessageToParent(JSON.stringify({
+	            name: 'haptic',
+	            type: 'medium'
+	          }));
+	        }
+	        if (homeStateRef.current === touch.id && Math.sqrt(Math.pow(touch.x - homeCenterRef.current.x, 2) + Math.pow(touch.y - homeCenterRef.current.y, 2)) > 23) {
+	          setHomeState(null);
+	          homeStateRef.current = null;
+	        } else if (homeStateRef.current === null && Math.sqrt(Math.pow(touch.x - homeCenterRef.current.x, 2) + Math.pow(touch.y - homeCenterRef.current.y, 2)) <= 23) {
+	          setHomeState(touch.id);
+	          homeStateRef.current = touch.id;
+	          sendMessageToParent(JSON.stringify({
+	            name: 'haptic',
+	            type: 'light'
+	          }));
+	        }
+	        if (plusStateRef.current === touch.id && Math.sqrt(Math.pow(touch.x - plusCenterRef.current.x, 2) + Math.pow(touch.y - plusCenterRef.current.y, 2)) > 23) {
+	          setPlusState(null);
+	          plusStateRef.current = null;
+	        } else if (plusStateRef.current === null && Math.sqrt(Math.pow(touch.x - plusCenterRef.current.x, 2) + Math.pow(touch.y - plusCenterRef.current.y, 2)) <= 23) {
+	          setPlusState(touch.id);
+	          plusStateRef.current = touch.id;
+	          sendMessageToParent(JSON.stringify({
+	            name: 'haptic',
+	            type: 'light'
+	          }));
+	        }
 	      }
 	    }
 	  };
@@ -15035,27 +14976,24 @@ Please use another name.` );
 	          id: null
 	        };
 	      }
-	      if (fireStateRef.current.id === touch.id) {
-	        setFireState({
-	          id: null,
-	          active: false
-	        });
-	        fireStateRef.current = {
-	          id: null,
-	          active: false
-	        };
+	      if (circleStateRef.current === touch.id) {
+	        setCircleState(null);
+	        circleStateRef.current = null;
 	      }
-	      if (boostPressedRef.current === touch.id) {
-	        setBoostPressed(null);
-	        boostPressedRef.current = null;
+	      if (triangleStateRef.current === touch.id) {
+	        setTriangleState(null);
+	        triangleStateRef.current = null;
 	      }
-	      if (minusPressedRef.current === touch.id) {
-	        setMinusPressed(null);
-	        minusPressedRef.current = null;
+	      if (homeStateRef.current === touch.id) {
+	        sendMessageToParent(JSON.stringify({
+	          name: 'exit-confirmation'
+	        }));
+	        setHomeState(null);
+	        homeStateRef.current = null;
 	      }
-	      if (plusPressedRef.current === touch.id) {
-	        setPlusPressed(null);
-	        plusPressedRef.current = null;
+	      if (plusStateRef.current === touch.id) {
+	        setPlusState(null);
+	        plusStateRef.current = null;
 	      }
 	    }
 	  };
@@ -15064,172 +15002,221 @@ Please use another name.` );
 	      width: '100vw',
 	      height: '100vh',
 	      display: 'flex',
+	      flexDirection: 'row',
+	      justifyContent: 'space-between',
+	      alignItems: 'flex-end',
+	      overflow: 'hidden',
+	      backgroundColor: '#E2E2E2'
+	    },
+	    onLoad: setCenters
+	  }, /*#__PURE__*/React.createElement(Box$1, {
+	    style: {
+	      display: 'flex',
+	      flexDirection: 'column',
+	      justifyContent: 'center',
+	      alignItems: 'center',
+	      marginLeft: 63,
+	      marginBottom: 58,
+	      width: 274,
+	      height: 274,
+	      borderRadius: 274,
+	      backgroundColor: '#C6C6C6',
+	      boxShadow: '3px 0px 3px 0px #FFF inset, -3px 0px 3px 0px rgba(0, 0, 0, 0.35) inset',
+	      position: 'relative'
+	    }
+	  }, /*#__PURE__*/React.createElement(Box$1, {
+	    style: {
+	      display: 'flex',
+	      flexDirection: 'column',
+	      justifyContent: 'center',
+	      alignItems: 'center',
+	      width: 140,
+	      height: 140,
+	      borderRadius: 140,
+	      backgroundColor: '#EBEBEB',
+	      boxShadow: '-3px 0px 3px 0px #FFF inset, 3px 0px 3px 0px rgba(0, 0, 0, 0.35) inset',
+	      filter: 'drop-shadow(0px 0px 25px rgba(0, 0, 0, 0.35))',
+	      position: 'absolute',
+	      top: 67 - joystickState.y / 100 * MAX_JOYSTICK_DISTANCE,
+	      left: 67 + joystickState.x / 100 * MAX_JOYSTICK_DISTANCE,
+	      transform: 'translateZ(0)'
+	    }
+	  }, /*#__PURE__*/React.createElement(Box$1, {
+	    style: {
+	      display: 'flex',
+	      flexDirection: 'column',
+	      justifyContent: 'center',
+	      alignItems: 'center',
+	      width: 110,
+	      height: 110,
+	      borderRadius: 110,
+	      backgroundColor: '#BB3D3D',
+	      boxShadow: '1px 0px 1px 0px #FFF inset, -1px 0px 1px 0px rgba(0, 0, 0, 0.35) inset'
+	    }
+	  }, /*#__PURE__*/React.createElement(Box$1, {
+	    style: {
+	      display: 'flex',
+	      flexDirection: 'column',
+	      justifyContent: 'center',
+	      alignItems: 'center',
+	      width: 104,
+	      height: 104,
+	      borderRadius: 104,
+	      backgroundColor: '#EBEBEB',
+	      boxShadow: '-1px 0px 1px 0px #FFF inset, 1px 0px 1px 0px rgba(0, 0, 0, 0.35) inset'
+	    }
+	  }, /*#__PURE__*/React.createElement(Box$1, {
+	    style: {
+	      display: 'flex',
+	      flexDirection: 'column',
+	      justifyContent: 'center',
+	      alignItems: 'center',
+	      width: 84,
+	      height: 84,
+	      borderRadius: 84,
+	      backgroundColor: '#EBEBEB',
+	      boxShadow: '1px 0px 1px 0px #FFF inset, -1px 0px 1px 0px rgba(0, 0, 0, 0.35) inset'
+	    }
+	  }, /*#__PURE__*/React.createElement(Box$1, {
+	    style: {
+	      display: 'flex',
+	      flexDirection: 'column',
+	      justifyContent: 'center',
+	      alignItems: 'center',
+	      width: 77,
+	      height: 77,
+	      borderRadius: 77,
+	      backgroundColor: '#EBEBEB',
+	      boxShadow: '-1px 0px 1px 0px #FFF inset, 1px 0px 1px 0px rgba(0, 0, 0, 0.35) inset'
+	    }
+	  })))))), /*#__PURE__*/React.createElement(Box$1, {
+	    style: {
+	      display: 'flex',
 	      flexDirection: 'column',
 	      justifyContent: 'space-between',
 	      alignItems: 'center',
-	      overflow: 'hidden',
-	      backgroundColor: '#543C28'
-	    },
-	    onLoad: setCenters
-	  }, /*#__PURE__*/React.createElement("img", {
-	    src: './assets/texture.png',
-	    style: {
-	      width: '100vw',
-	      height: '100vh',
-	      position: 'absolute',
-	      zIndex: 3,
-	      opacity: 0.35
-	    }
-	  }), /*#__PURE__*/React.createElement(Box$1, {
-	    style: {
-	      width: '100vw',
-	      display: 'flex',
-	      flexDirection: 'column',
-	      alignItems: 'center',
-	      justifyContent: 'flex-start',
-	      position: 'absolute',
-	      top: 30,
-	      gap: 20
+	      height: '100%'
 	    }
 	  }, /*#__PURE__*/React.createElement(Box$1, {
 	    style: {
-	      width: 'calc(100vw - 100px)',
 	      display: 'flex',
-	      flexDirection: 'row',
-	      alignItems: 'flex-start',
-	      justifyContent: 'space-between'
+	      flexDirection: 'column',
+	      justifyContent: 'center',
+	      alignItems: 'center',
+	      marginTop: 26
 	    }
 	  }, /*#__PURE__*/React.createElement("img", {
-	    src: './assets/minus.png',
-	    alt: 'minus'
-	  }), /*#__PURE__*/React.createElement("img", {
-	    src: './assets/title.png',
-	    alt: 'title',
-	    width: 103,
-	    height: 28
-	  }), /*#__PURE__*/React.createElement("img", {
-	    src: './assets/plus.png',
-	    alt: 'plus'
-	  })), /*#__PURE__*/React.createElement("img", {
-	    src: './assets/leave-icon.svg',
-	    alt: 'leave'
-	  })), /*#__PURE__*/React.createElement(Box$1, {
+	    src: './assets/logo.svg',
+	    alt: 'logo',
 	    style: {
-	      display: 'flex',
-	      flex: 1
-	    }
-	  }), /*#__PURE__*/React.createElement(Box$1, {
-	    style: {
-	      width: 'calc(100vw - 200px)',
-	      display: 'flex',
-	      flexDirection: 'row',
-	      alignItems: 'flex-end',
-	      justifyContent: 'space-between'
-	    }
-	  }, /*#__PURE__*/React.createElement(Box$1, {
-	    style: {
-	      display: 'flex',
-	      flexDirection: 'column',
-	      alignItems: 'center',
-	      justifyContent: 'center',
-	      marginBottom: 76,
-	      position: 'relative',
-	      width: JOYSTICK_RADIUS * 2,
-	      height: JOYSTICK_RADIUS * 2
-	    }
-	  }, /*#__PURE__*/React.createElement(Box$1, {
-	    style: {
-	      display: 'flex',
-	      flexDirection: 'column',
-	      alignItems: 'center',
-	      justifyContent: 'center',
-	      position: 'absolute',
-	      zIndex: 1,
-	      top: JOYSTICK_RADIUS - JOYSTICK_THROTTLE_RADIUS - joystickState.y * MAX_JOYSTICK_DISTANCE / 100,
-	      left: JOYSTICK_RADIUS - JOYSTICK_THROTTLE_RADIUS + joystickState.x * MAX_JOYSTICK_DISTANCE / 100
-	    }
-	  }, /*#__PURE__*/React.createElement(Box$1, {
-	    style: {
-	      display: 'flex',
-	      flexDirection: 'column',
-	      alignItems: 'center',
-	      justifyContent: 'center',
-	      width: JOYSTICK_THROTTLE_RADIUS * 2,
-	      height: JOYSTICK_THROTTLE_RADIUS * 2
-	    }
-	  }, /*#__PURE__*/React.createElement("img", {
-	    src: './assets/joystick-throttle.png',
-	    alt: 'joystick-throttle',
-	    style: {
-	      resizeMode: "cover"
-	    }
-	  }))), /*#__PURE__*/React.createElement("img", {
-	    src: './assets/joystick-base.png',
-	    alt: 'joystick-base'
-	  })), /*#__PURE__*/React.createElement(Box$1, {
-	    style: {
-	      display: 'flex',
-	      width: 32,
-	      height: 140,
-	      flexDirection: 'column',
-	      justifyContent: 'flex-end',
-	      alignItems: 'center',
-	      borderRadius: 100,
-	      boxShadow: '0px 0px 10px 0px #000 inset',
-	      marginBottom: 100,
-	      marginRight: 38
-	    }
-	  }, /*#__PURE__*/React.createElement(Box$1, {
-	    style: {
-	      display: 'flex',
-	      flexDirection: 'row',
-	      alignItems: 'center',
-	      justifyContent: 'center',
-	      height: percentBoost * 140 / 100,
-	      width: 32,
-	      borderRadius: 100,
-	      background: 'linear-gradient(180deg, #73A04A 0%, #3D4B30 100%)',
-	      boxShadow: '0px 0px 10px 0px #000 inset'
+	      width: 63,
+	      height: 32
 	    }
 	  })), /*#__PURE__*/React.createElement(Box$1, {
 	    style: {
 	      display: 'flex',
-	      flexDirection: 'row',
-	      alignItems: 'flex-start',
+	      flexDirection: 'column',
 	      justifyContent: 'center',
-	      marginBottom: 110
+	      alignItems: 'center',
+	      gap: 20,
+	      marginBottom: 141
 	    }
-	  }, fireState.active ? /*#__PURE__*/React.createElement("img", {
-	    src: './assets/fire-button-pressed.png',
-	    alt: 'fire-pressed',
-	    width: 208,
-	    height: 208
-	  }) : /*#__PURE__*/React.createElement("img", {
-	    src: './assets/fire-button.png',
-	    alt: 'fire',
-	    width: 208,
-	    height: 208
-	  })), boostPressed !== null ? /*#__PURE__*/React.createElement("img", {
-	    src: './assets/boost-button-pressed.png',
-	    alt: 'boost-pressed',
-	    width: 67.7,
-	    height: 67.7,
+	  }, /*#__PURE__*/React.createElement(Box$1, {
 	    style: {
-	      position: 'absolute',
-	      bottom: 91 - BOOST_BUTTON_RADIUS,
-	      right: 100 + FIRE_BUTTON_RADIUS * 2
+	      display: 'flex',
+	      flexDirection: 'column',
+	      justifyContent: 'center',
+	      alignItems: 'center',
+	      width: 44.181,
+	      height: 44.181,
+	      borderRadius: 44.181,
+	      backgroundColor: homeState !== null ? '#DADADA' : '#EBEBEB',
+	      boxShadow: homeState !== null ? '1px 0px 1px 0px #FFF inset, -1px 0px 1px 0px rgba(0, 0, 0, 0.35) inset' : '-1px 0px 1px 0px #FFF inset, 1px 0px 1px 0px rgba(0, 0, 0, 0.35) inset'
 	    }
-	  }) : /*#__PURE__*/React.createElement("img", {
-	    src: './assets/boost-button.png',
-	    alt: 'boost',
-	    width: 67.7,
-	    height: 67.7,
+	  }, /*#__PURE__*/React.createElement("img", {
+	    src: './assets/home.svg',
+	    alt: 'home',
 	    style: {
-	      position: 'absolute',
-	      bottom: 91 - BOOST_BUTTON_RADIUS,
-	      right: 100 + FIRE_BUTTON_RADIUS * 2
+	      width: 24,
+	      height: 22
 	    }
-	  })));
+	  })), /*#__PURE__*/React.createElement(Box$1, {
+	    style: {
+	      display: 'flex',
+	      flexDirection: 'column',
+	      justifyContent: 'center',
+	      alignItems: 'center',
+	      width: 44.181,
+	      height: 44.181,
+	      borderRadius: 44.181,
+	      backgroundColor: plusState !== null ? '#DADADA' : '#EBEBEB',
+	      boxShadow: plusState !== null ? '1px 0px 1px 0px #FFF inset, -1px 0px 1px 0px rgba(0, 0, 0, 0.35) inset' : '-1px 0px 1px 0px #FFF inset, 1px 0px 1px 0px rgba(0, 0, 0, 0.35) inset'
+	    }
+	  }, /*#__PURE__*/React.createElement("img", {
+	    src: './assets/plus.svg',
+	    alt: 'plus',
+	    style: {
+	      width: 21,
+	      height: 21
+	    }
+	  })))), /*#__PURE__*/React.createElement(Box$1, {
+	    style: {
+	      display: 'flex',
+	      flexDirection: 'column',
+	      justifyContent: 'center',
+	      alignItems: 'center',
+	      marginRight: 63,
+	      marginBottom: 58,
+	      width: 274,
+	      height: 274,
+	      position: 'relative'
+	    }
+	  }, /*#__PURE__*/React.createElement(Box$1, {
+	    style: {
+	      display: 'flex',
+	      flexDirection: 'column',
+	      justifyContent: 'center',
+	      alignItems: 'center',
+	      width: 142,
+	      height: 142,
+	      borderRadius: 142,
+	      backgroundColor: circleState !== null ? '#9F3636' : '#BB3D3D',
+	      boxShadow: circleState !== null ? '2px 0px 2px 0px rgba(255, 255, 255, 0.50) inset, -2px 0px 2px 0px #000 inset' : '-2px 0px 2px 0px rgba(255, 255, 255, 0.50) inset, 2px 0px 2px 0px #000 inset',
+	      position: 'absolute',
+	      left: 0,
+	      bottom: 0
+	    }
+	  }, /*#__PURE__*/React.createElement("img", {
+	    src: './assets/circle.svg',
+	    alt: 'circle',
+	    style: {
+	      width: 62,
+	      height: 62
+	    }
+	  })), /*#__PURE__*/React.createElement(Box$1, {
+	    style: {
+	      display: 'flex',
+	      flexDirection: 'column',
+	      justifyContent: 'center',
+	      alignItems: 'center',
+	      width: 142,
+	      height: 142,
+	      borderRadius: 142,
+	      backgroundColor: triangleState !== null ? '#9F3636' : '#BB3D3D',
+	      boxShadow: triangleState !== null ? '2px 0px 2px 0px rgba(255, 255, 255, 0.50) inset, -2px 0px 2px 0px #000 inset' : '-2px 0px 2px 0px rgba(255, 255, 255, 0.50) inset, 2px 0px 2px 0px #000 inset',
+	      position: 'absolute',
+	      right: 0,
+	      top: 0
+	    }
+	  }, /*#__PURE__*/React.createElement("img", {
+	    src: './assets/triangle.svg',
+	    alt: 'triangle',
+	    style: {
+	      width: 69,
+	      height: 56,
+	      marginBottom: 5
+	    }
+	  }))));
 	}
 
 	client.createRoot(document.querySelector('#root')).render( /*#__PURE__*/React.createElement(App, null));
