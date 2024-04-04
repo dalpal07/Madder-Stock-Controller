@@ -14716,6 +14716,7 @@ Please use another name.` );
 	  const homeStateRef = reactExports.useRef(homeState);
 	  const [plusState, setPlusState] = reactExports.useState(null);
 	  const plusStateRef = reactExports.useRef(plusState);
+	  const [playerName, setPlayerName] = reactExports.useState('');
 	  function sendMessageToParent(message) {
 	    window.ReactNativeWebView.postMessage(message);
 	  }
@@ -14729,6 +14730,8 @@ Please use another name.` );
 	      sendMessageToParent(JSON.stringify({
 	        name: 'exit'
 	      }));
+	    } else if (msg.name === 'name') {
+	      setPlayerName(msg.player);
 	    }
 	  }
 	  const joystickTopLeft = reactExports.useMemo(() => {
@@ -14754,6 +14757,7 @@ Please use another name.` );
 	  }, []);
 	  reactExports.useEffect(() => {
 	    const controllerState = {
+	      name: playerName,
 	      joystick: {
 	        x: joystickState.x,
 	        y: joystickState.y
@@ -14814,179 +14818,175 @@ Please use another name.` );
 	  const onTouchStart = e => {
 	    e.preventDefault();
 	    const {
-	      changedTouches
+	      pointerId,
+	      clientX,
+	      clientY
 	    } = e;
-	    for (let touch of changedTouches) {
-	      const x = touch.pageX;
-	      const y = touch.pageY;
-	      if (joystickStateRef.current.id === null) {
-	        if (Math.sqrt(Math.pow(x - joystickCenterRef.current.x, 2) + Math.pow(y - joystickCenterRef.current.y, 2)) <= 70) {
-	          setJoystickState({
-	            x: Math.round((x - joystickCenterRef.current.x) / MAX_JOYSTICK_DISTANCE * 100),
-	            y: Math.round((joystickCenterRef.current.y - y) / 137 * 100),
-	            id: touch.identifier
-	          });
-	          joystickStateRef.current = {
-	            x: Math.round((x - joystickCenterRef.current.x) / MAX_JOYSTICK_DISTANCE * 100),
-	            y: Math.round((joystickCenterRef.current.y - y) / 137 * 100),
-	            id: touch.identifier
-	          };
-	          sendMessageToParent(JSON.stringify({
-	            name: 'haptic',
-	            type: 'medium'
-	          }));
-	        }
+	    if (joystickStateRef.current.id === null) {
+	      if (Math.sqrt(Math.pow(clientX - joystickCenterRef.current.x, 2) + Math.pow(clientY - joystickCenterRef.current.y, 2)) <= 70) {
+	        setJoystickState({
+	          x: Math.round((clientX - joystickCenterRef.current.x) / MAX_JOYSTICK_DISTANCE * 100),
+	          y: Math.round((joystickCenterRef.current.y - clientY) / 137 * 100),
+	          id: pointerId
+	        });
+	        joystickStateRef.current = {
+	          x: Math.round((clientX - joystickCenterRef.current.x) / MAX_JOYSTICK_DISTANCE * 100),
+	          y: Math.round((joystickCenterRef.current.y - clientY) / 137 * 100),
+	          id: pointerId
+	        };
+	        sendMessageToParent(JSON.stringify({
+	          name: 'haptic',
+	          type: 'medium'
+	        }));
 	      }
-	      if (circleStateRef.current === null) {
-	        if (Math.sqrt(Math.pow(x - circleCenterRef.current.x, 2) + Math.pow(y - circleCenterRef.current.y, 2)) <= 71) {
-	          setCircleState(touch.identifier);
-	          circleStateRef.current = touch.identifier;
-	          sendMessageToParent(JSON.stringify({
-	            name: 'haptic',
-	            type: 'medium'
-	          }));
-	        }
+	    }
+	    if (circleStateRef.current === null) {
+	      if (Math.sqrt(Math.pow(clientX - circleCenterRef.current.x, 2) + Math.pow(clientY - circleCenterRef.current.y, 2)) <= 71) {
+	        setCircleState(pointerId);
+	        circleStateRef.current = pointerId;
+	        sendMessageToParent(JSON.stringify({
+	          name: 'haptic',
+	          type: 'medium'
+	        }));
 	      }
-	      if (triangleStateRef.current === null) {
-	        if (Math.sqrt(Math.pow(x - triangleCenterRef.current.x, 2) + Math.pow(y - triangleCenterRef.current.y, 2)) <= 71) {
-	          setTriangleState(touch.identifier);
-	          triangleStateRef.current = touch.identifier;
-	          sendMessageToParent(JSON.stringify({
-	            name: 'haptic',
-	            type: 'medium'
-	          }));
-	        }
+	    }
+	    if (triangleStateRef.current === null) {
+	      if (Math.sqrt(Math.pow(clientX - triangleCenterRef.current.x, 2) + Math.pow(clientY - triangleCenterRef.current.y, 2)) <= 71) {
+	        setTriangleState(pointerId);
+	        triangleStateRef.current = pointerId;
+	        sendMessageToParent(JSON.stringify({
+	          name: 'haptic',
+	          type: 'medium'
+	        }));
 	      }
-	      if (homeStateRef.current === null) {
-	        if (Math.sqrt(Math.pow(x - homeCenterRef.current.x, 2) + Math.pow(y - homeCenterRef.current.y, 2)) <= 23) {
-	          setHomeState(touch.identifier);
-	          homeStateRef.current = touch.identifier;
-	          sendMessageToParent(JSON.stringify({
-	            name: 'haptic',
-	            type: 'light'
-	          }));
-	        }
+	    }
+	    if (homeStateRef.current === null) {
+	      if (Math.sqrt(Math.pow(clientX - homeCenterRef.current.x, 2) + Math.pow(clientY - homeCenterRef.current.y, 2)) <= 23) {
+	        setHomeState(pointerId);
+	        homeStateRef.current = pointerId;
+	        sendMessageToParent(JSON.stringify({
+	          name: 'haptic',
+	          type: 'light'
+	        }));
 	      }
-	      if (plusStateRef.current === null) {
-	        if (Math.sqrt(Math.pow(x - plusCenterRef.current.x, 2) + Math.pow(y - plusCenterRef.current.y, 2)) <= 23) {
-	          setPlusState(touch.identifier);
-	          plusStateRef.current = touch.identifier;
-	          sendMessageToParent(JSON.stringify({
-	            name: 'haptic',
-	            type: 'light'
-	          }));
-	        }
+	    }
+	    if (plusStateRef.current === null) {
+	      if (Math.sqrt(Math.pow(clientX - plusCenterRef.current.x, 2) + Math.pow(clientY - plusCenterRef.current.y, 2)) <= 23) {
+	        setPlusState(pointerId);
+	        plusStateRef.current = pointerId;
+	        sendMessageToParent(JSON.stringify({
+	          name: 'haptic',
+	          type: 'light'
+	        }));
 	      }
 	    }
 	  };
 	  const onTouchMove = e => {
 	    e.preventDefault();
 	    const {
-	      changedTouches
+	      pointerId,
+	      clientX,
+	      clientY
 	    } = e;
-	    for (let touch of changedTouches) {
-	      if (joystickStateRef.current.id === touch.identifier) {
-	        const x = touch.pageX - joystickCenterRef.current.x;
-	        const y = joystickCenterRef.current.y - touch.pageY;
-	        const angle = Math.atan2(y, x);
-	        const distance = Math.min(50, Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)));
-	        const newX = Math.round(Math.cos(angle) * distance / 50 * 100);
-	        const newY = Math.round(Math.sin(angle) * distance / 50 * 100);
-	        setJoystickState({
-	          x: newX,
-	          y: newY,
-	          id: touch.identifier
-	        });
-	        joystickStateRef.current = {
-	          x: newX,
-	          y: newY,
-	          id: touch.identifier
-	        };
-	      } else {
-	        if (circleStateRef.current === touch.identifier && Math.sqrt(Math.pow(touch.pageX - circleCenterRef.current.x, 2) + Math.pow(touch.pageY - circleCenterRef.current.y, 2)) > 71) {
-	          setCircleState(null);
-	          circleStateRef.current = null;
-	        } else if (circleStateRef.current === null && Math.sqrt(Math.pow(touch.pageX - circleCenterRef.current.x, 2) + Math.pow(touch.pageY - circleCenterRef.current.y, 2)) <= 71) {
-	          setCircleState(touch.identifier);
-	          circleStateRef.current = touch.identifier;
-	          sendMessageToParent(JSON.stringify({
-	            name: 'haptic',
-	            type: 'medium'
-	          }));
-	        }
-	        if (triangleStateRef.current === touch.identifier && Math.sqrt(Math.pow(touch.pageX - triangleCenterRef.current.x, 2) + Math.pow(touch.pageY - triangleCenterRef.current.y, 2)) > 71) {
-	          setTriangleState(null);
-	          triangleStateRef.current = null;
-	        } else if (triangleStateRef.current === null && Math.sqrt(Math.pow(touch.pageX - triangleCenterRef.current.x, 2) + Math.pow(touch.pageY - triangleCenterRef.current.y, 2)) <= 71) {
-	          setTriangleState(touch.identifier);
-	          triangleStateRef.current = touch.identifier;
-	          sendMessageToParent(JSON.stringify({
-	            name: 'haptic',
-	            type: 'medium'
-	          }));
-	        }
-	        if (homeStateRef.current === touch.identifier && Math.sqrt(Math.pow(touch.pageX - homeCenterRef.current.x, 2) + Math.pow(touch.pageY - homeCenterRef.current.y, 2)) > 23) {
-	          setHomeState(null);
-	          homeStateRef.current = null;
-	        } else if (homeStateRef.current === null && Math.sqrt(Math.pow(touch.pageX - homeCenterRef.current.x, 2) + Math.pow(touch.pageY - homeCenterRef.current.y, 2)) <= 23) {
-	          setHomeState(touch.identifier);
-	          homeStateRef.current = touch.identifier;
-	          sendMessageToParent(JSON.stringify({
-	            name: 'haptic',
-	            type: 'light'
-	          }));
-	        }
-	        if (plusStateRef.current === touch.identifier && Math.sqrt(Math.pow(touch.pageX - plusCenterRef.current.x, 2) + Math.pow(touch.pageY - plusCenterRef.current.y, 2)) > 23) {
-	          setPlusState(null);
-	          plusStateRef.current = null;
-	        } else if (plusStateRef.current === null && Math.sqrt(Math.pow(touch.pageX - plusCenterRef.current.x, 2) + Math.pow(touch.pageY - plusCenterRef.current.y, 2)) <= 23) {
-	          setPlusState(touch.identifier);
-	          plusStateRef.current = touch.identifier;
-	          sendMessageToParent(JSON.stringify({
-	            name: 'haptic',
-	            type: 'light'
-	          }));
-	        }
+	    if (joystickStateRef.current.id === pointerId) {
+	      const x = clientX - joystickCenterRef.current.x;
+	      const y = joystickCenterRef.current.y - clientY;
+	      const angle = Math.atan2(y, x);
+	      const distance = Math.min(50, Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)));
+	      const newX = Math.round(Math.cos(angle) * distance / 50 * 100);
+	      const newY = Math.round(Math.sin(angle) * distance / 50 * 100);
+	      setJoystickState({
+	        x: newX,
+	        y: newY,
+	        id: pointerId
+	      });
+	      joystickStateRef.current = {
+	        x: newX,
+	        y: newY,
+	        id: pointerId
+	      };
+	    } else {
+	      if (circleStateRef.current === pointerId && Math.sqrt(Math.pow(clientX - circleCenterRef.current.x, 2) + Math.pow(clientY - circleCenterRef.current.y, 2)) > 71) {
+	        setCircleState(null);
+	        circleStateRef.current = null;
+	      } else if (circleStateRef.current === null && Math.sqrt(Math.pow(clientX - circleCenterRef.current.x, 2) + Math.pow(clientY - circleCenterRef.current.y, 2)) <= 71) {
+	        setCircleState(pointerId);
+	        circleStateRef.current = pointerId;
+	        sendMessageToParent(JSON.stringify({
+	          name: 'haptic',
+	          type: 'medium'
+	        }));
+	      }
+	      if (triangleStateRef.current === pointerId && Math.sqrt(Math.pow(clientX - triangleCenterRef.current.x, 2) + Math.pow(clientY - triangleCenterRef.current.y, 2)) > 71) {
+	        setTriangleState(null);
+	        triangleStateRef.current = null;
+	      } else if (triangleStateRef.current === null && Math.sqrt(Math.pow(clientX - triangleCenterRef.current.x, 2) + Math.pow(clientY - triangleCenterRef.current.y, 2)) <= 71) {
+	        setTriangleState(pointerId);
+	        triangleStateRef.current = pointerId;
+	        sendMessageToParent(JSON.stringify({
+	          name: 'haptic',
+	          type: 'medium'
+	        }));
+	      }
+	      if (homeStateRef.current === pointerId && Math.sqrt(Math.pow(clientX - homeCenterRef.current.x, 2) + Math.pow(clientY - homeCenterRef.current.y, 2)) > 23) {
+	        setHomeState(null);
+	        homeStateRef.current = null;
+	      } else if (homeStateRef.current === null && Math.sqrt(Math.pow(clientX - homeCenterRef.current.x, 2) + Math.pow(clientY - homeCenterRef.current.y, 2)) <= 23) {
+	        setHomeState(pointerId);
+	        homeStateRef.current = pointerId;
+	        sendMessageToParent(JSON.stringify({
+	          name: 'haptic',
+	          type: 'light'
+	        }));
+	      }
+	      if (plusStateRef.current === pointerId && Math.sqrt(Math.pow(clientX - plusCenterRef.current.x, 2) + Math.pow(clientY - plusCenterRef.current.y, 2)) > 23) {
+	        setPlusState(null);
+	        plusStateRef.current = null;
+	      } else if (plusStateRef.current === null && Math.sqrt(Math.pow(clientX - plusCenterRef.current.x, 2) + Math.pow(clientY - plusCenterRef.current.y, 2)) <= 23) {
+	        setPlusState(pointerId);
+	        plusStateRef.current = pointerId;
+	        sendMessageToParent(JSON.stringify({
+	          name: 'haptic',
+	          type: 'light'
+	        }));
 	      }
 	    }
 	  };
 	  const onTouchEnd = e => {
 	    e.preventDefault();
 	    const {
-	      changedTouches
+	      pointerId
 	    } = e;
-	    for (let touch of changedTouches) {
-	      if (joystickStateRef.current.id === touch.identifier) {
-	        setJoystickState({
-	          x: 0,
-	          y: 0,
-	          id: null
-	        });
-	        joystickStateRef.current = {
-	          x: 0,
-	          y: 0,
-	          id: null
-	        };
-	      }
-	      if (circleStateRef.current === touch.identifier) {
-	        setCircleState(null);
-	        circleStateRef.current = null;
-	      }
-	      if (triangleStateRef.current === touch.identifier) {
-	        setTriangleState(null);
-	        triangleStateRef.current = null;
-	      }
-	      if (homeStateRef.current === touch.identifier) {
-	        sendMessageToParent(JSON.stringify({
-	          name: 'exit-confirmation'
-	        }));
-	        setHomeState(null);
-	        homeStateRef.current = null;
-	      }
-	      if (plusStateRef.current === touch.identifier) {
-	        setPlusState(null);
-	        plusStateRef.current = null;
-	      }
+	    if (joystickStateRef.current.id === pointerId) {
+	      setJoystickState({
+	        x: 0,
+	        y: 0,
+	        id: null
+	      });
+	      joystickStateRef.current = {
+	        x: 0,
+	        y: 0,
+	        id: null
+	      };
+	    }
+	    if (circleStateRef.current === pointerId) {
+	      setCircleState(null);
+	      circleStateRef.current = null;
+	    }
+	    if (triangleStateRef.current === pointerId) {
+	      setTriangleState(null);
+	      triangleStateRef.current = null;
+	    }
+	    if (homeStateRef.current === pointerId) {
+	      sendMessageToParent(JSON.stringify({
+	        name: 'exit-confirmation'
+	      }));
+	      setHomeState(null);
+	      homeStateRef.current = null;
+	    }
+	    if (plusStateRef.current === pointerId) {
+	      setPlusState(null);
+	      plusStateRef.current = null;
 	    }
 	  };
 	  return /*#__PURE__*/React.createElement(Box$1, {
@@ -14998,12 +14998,13 @@ Please use another name.` );
 	      justifyContent: 'space-between',
 	      alignItems: 'flex-end',
 	      overflow: 'hidden',
-	      backgroundColor: '#E2E2E2'
+	      backgroundColor: '#E2E2E2',
+	      touchAction: 'none'
 	    },
 	    onLoad: memoizedSetCenters,
-	    onTouchStart: memoizedTouchStart,
-	    onTouchMove: memoizedTouchMove,
-	    onTouchEnd: memoizedTouchEnd,
+	    onPointerDown: memoizedTouchStart,
+	    onPointerMove: memoizedTouchMove,
+	    onPointerLeave: memoizedTouchEnd,
 	    onResize: memoizedSetCenters
 	  }, /*#__PURE__*/React.createElement(Box$1, {
 	    style: {
