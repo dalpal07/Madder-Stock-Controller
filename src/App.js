@@ -57,11 +57,19 @@ function App() {
     const memoizedTouchEnd = useCallback((e) => onTouchEnd(e), []);
 
     useEffect(() => {
+        const handleResize = () => {
+            memoizedSetCenters();
+        };
+
+        window.addEventListener("resize", handleResize);
+        window.addEventListener("orientationchange", handleResize);
         window.addEventListener('message', handleMessageFromParent);
 
         sendMessageToParent(JSON.stringify({name: 'ready'}));
 
         return () => {
+            window.removeEventListener("resize", handleResize);
+            window.removeEventListener("orientationchange", handleResize);
             window.removeEventListener('message', handleMessageFromParent);
         }
     }, []);
@@ -227,7 +235,6 @@ function App() {
             onPointerDown={memoizedTouchStart}
             onPointerMove={memoizedTouchMove}
             onPointerLeave={memoizedTouchEnd}
-            onResize={memoizedSetCenters}
         >
             <Box
                 style={{

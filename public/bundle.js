@@ -14747,11 +14747,18 @@ Please use another name.` );
 	  const memoizedTouchMove = reactExports.useCallback(e => onTouchMove(e), []);
 	  const memoizedTouchEnd = reactExports.useCallback(e => onTouchEnd(e), []);
 	  reactExports.useEffect(() => {
+	    const handleResize = () => {
+	      memoizedSetCenters();
+	    };
+	    window.addEventListener("resize", handleResize);
+	    window.addEventListener("orientationchange", handleResize);
 	    window.addEventListener('message', handleMessageFromParent);
 	    sendMessageToParent(JSON.stringify({
 	      name: 'ready'
 	    }));
 	    return () => {
+	      window.removeEventListener("resize", handleResize);
+	      window.removeEventListener("orientationchange", handleResize);
 	      window.removeEventListener('message', handleMessageFromParent);
 	    };
 	  }, []);
@@ -15004,8 +15011,7 @@ Please use another name.` );
 	    onLoad: memoizedSetCenters,
 	    onPointerDown: memoizedTouchStart,
 	    onPointerMove: memoizedTouchMove,
-	    onPointerLeave: memoizedTouchEnd,
-	    onResize: memoizedSetCenters
+	    onPointerLeave: memoizedTouchEnd
 	  }, /*#__PURE__*/React.createElement(Box$1, {
 	    style: {
 	      display: 'flex',
