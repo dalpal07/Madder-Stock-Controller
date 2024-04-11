@@ -14718,7 +14718,12 @@ Please use another name.` );
 	  const plusStateRef = reactExports.useRef(plusState);
 	  const [playerName, setPlayerName] = reactExports.useState('');
 	  function sendMessageToParent(message) {
-	    window.ReactNativeWebView.postMessage(message);
+	    if (window.ReactNativeWebView) {
+	      window.ReactNativeWebView.postMessage(message);
+	    }
+	    if (window.parent) {
+	      window.parent.postMessage(message, "*");
+	    }
 	  }
 	  function handleMessageFromParent(event) {
 	    const msg = event.data;

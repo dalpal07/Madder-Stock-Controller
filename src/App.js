@@ -29,7 +29,13 @@ function App() {
     const [playerName, setPlayerName] = useState('');
 
     function sendMessageToParent(message) {
-        window.ReactNativeWebView.postMessage(message);
+        if(window.ReactNativeWebView){
+            window.ReactNativeWebView.postMessage(message);
+        }
+
+        if(window.parent){
+            window.parent.postMessage(message, "*");
+        }
     }
 
     function handleMessageFromParent(event) {
