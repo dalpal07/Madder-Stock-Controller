@@ -16099,6 +16099,16 @@ Please use another name.` );
 	    y: 0
 	  });
 	  const triangleCenterRef = reactExports.useRef(triangleCenter);
+	  const [homeCenter, setHomeCenter] = reactExports.useState({
+	    x: 0,
+	    y: 0
+	  });
+	  const homeCenterRef = reactExports.useRef(homeCenter);
+	  const [plusCenter, setPlusCenter] = reactExports.useState({
+	    x: 0,
+	    y: 0
+	  });
+	  const plusCenterRef = reactExports.useRef(plusCenter);
 	  const joystickTouchContainerRef = reactExports.useRef(null);
 	  const joystickTouchContainerDimensionsRef = reactExports.useRef({
 	    x: 0,
@@ -16119,9 +16129,9 @@ Please use another name.` );
 	  const [triangleState, setTriangleState] = reactExports.useState(null);
 	  const triangleStateRef = reactExports.useRef(triangleState);
 	  const [homeState, setHomeState] = reactExports.useState(null);
-	  reactExports.useRef(homeState);
+	  const homeStateRef = reactExports.useRef(homeState);
 	  const [plusState, setPlusState] = reactExports.useState(null);
-	  reactExports.useRef(plusState);
+	  const plusStateRef = reactExports.useRef(plusState);
 	  const [playerName, setPlayerName] = reactExports.useState('');
 	  function sendMessageToParent(message) {
 	    if (window.ReactNativeWebView) {
@@ -16182,6 +16192,30 @@ Please use another name.` );
 	      triangleCenterRef.current = {
 	        x: x + width - LARGE_BUTTON_RADIUS,
 	        y: y + height - 3 * LARGE_BUTTON_RADIUS - LARGE_BUTTON_GAP
+	      };
+	    }
+	    if (homePlusContainerRef.current) {
+	      const {
+	        x,
+	        y,
+	        width,
+	        height
+	      } = homePlusContainerRef.current.getBoundingClientRect();
+	      setHomeCenter({
+	        x: x + SMALL_BUTTON_RADIUS,
+	        y: y + SMALL_BUTTON_RADIUS
+	      });
+	      homeCenterRef.current = {
+	        x: x + SMALL_BUTTON_RADIUS,
+	        y: y + SMALL_BUTTON_RADIUS
+	      };
+	      setPlusCenter({
+	        x: x + SMALL_BUTTON_RADIUS,
+	        y: y + height - SMALL_BUTTON_RADIUS
+	      });
+	      plusCenterRef.current = {
+	        x: x + SMALL_BUTTON_RADIUS,
+	        y: y + height - SMALL_BUTTON_RADIUS
 	      };
 	    }
 	  }
@@ -16269,6 +16303,12 @@ Please use another name.` );
 	      } else if (clientX > triangleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < triangleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > triangleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < triangleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
 	        setTriangleState(identifier);
 	        triangleStateRef.current = identifier;
+	      } else if (clientX > homeCenterRef.current.x - SMALL_BUTTON_RADIUS && clientX < homeCenterRef.current.x + SMALL_BUTTON_RADIUS && clientY > homeCenterRef.current.y - SMALL_BUTTON_RADIUS && clientY < homeCenterRef.current.y + SMALL_BUTTON_RADIUS) {
+	        setHomeState(identifier);
+	        homeStateRef.current = identifier;
+	      } else if (clientX > plusCenterRef.current.x - SMALL_BUTTON_RADIUS && clientX < plusCenterRef.current.x + SMALL_BUTTON_RADIUS && clientY > plusCenterRef.current.y - SMALL_BUTTON_RADIUS && clientY < plusCenterRef.current.y + SMALL_BUTTON_RADIUS) {
+	        setPlusState(identifier);
+	        plusStateRef.current = identifier;
 	      }
 	    }
 	  };
@@ -16321,6 +16361,20 @@ Please use another name.` );
 	          setTriangleState(identifier);
 	          triangleStateRef.current = identifier;
 	        }
+	        if (identifier === homeStateRef.current && (clientX < homeCenterRef.current.x - SMALL_BUTTON_RADIUS || clientX > homeCenterRef.current.x + SMALL_BUTTON_RADIUS || clientY < homeCenterRef.current.y - SMALL_BUTTON_RADIUS || clientY > homeCenterRef.current.y + SMALL_BUTTON_RADIUS)) {
+	          setHomeState(null);
+	          homeStateRef.current = null;
+	        } else if (identifier !== homeStateRef.current && clientX > homeCenterRef.current.x - SMALL_BUTTON_RADIUS && clientX < homeCenterRef.current.x + SMALL_BUTTON_RADIUS && clientY > homeCenterRef.current.y - SMALL_BUTTON_RADIUS && clientY < homeCenterRef.current.y + SMALL_BUTTON_RADIUS) {
+	          setHomeState(identifier);
+	          homeStateRef.current = identifier;
+	        }
+	        if (identifier === plusStateRef.current && (clientX < plusCenterRef.current.x - SMALL_BUTTON_RADIUS || clientX > plusCenterRef.current.x + SMALL_BUTTON_RADIUS || clientY < plusCenterRef.current.y - SMALL_BUTTON_RADIUS || clientY > plusCenterRef.current.y + SMALL_BUTTON_RADIUS)) {
+	          setPlusState(null);
+	          plusStateRef.current = null;
+	        } else if (identifier !== plusStateRef.current && clientX > plusCenterRef.current.x - SMALL_BUTTON_RADIUS && clientX < plusCenterRef.current.x + SMALL_BUTTON_RADIUS && clientY > plusCenterRef.current.y - SMALL_BUTTON_RADIUS && clientY < plusCenterRef.current.y + SMALL_BUTTON_RADIUS) {
+	          setPlusState(identifier);
+	          plusStateRef.current = identifier;
+	        }
 	      }
 	    }
 	  };
@@ -16355,6 +16409,12 @@ Please use another name.` );
 	      } else if (identifier === triangleStateRef.current) {
 	        setTriangleState(null);
 	        triangleStateRef.current = null;
+	      } else if (identifier === homeStateRef.current) {
+	        setHomeState(null);
+	        homeStateRef.current = null;
+	      } else if (identifier === plusStateRef.current) {
+	        setPlusState(null);
+	        plusStateRef.current = null;
 	      }
 	    }
 	    const {
@@ -16379,6 +16439,10 @@ Please use another name.` );
 	      circleStateRef.current = null;
 	      setTriangleState(null);
 	      triangleStateRef.current = null;
+	      setHomeState(null);
+	      homeStateRef.current = null;
+	      setPlusState(null);
+	      plusStateRef.current = null;
 	    }
 	  };
 	  return /*#__PURE__*/React.createElement(ControllerPageBox, null, /*#__PURE__*/React.createElement(SideContainer, {

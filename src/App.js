@@ -117,6 +117,10 @@ function App() {
     const circleCenterRef = useRef(circleCenter);
     const [triangleCenter, setTriangleCenter] = useState({x: 0, y: 0});
     const triangleCenterRef = useRef(triangleCenter);
+    const [homeCenter, setHomeCenter] = useState({x: 0, y: 0});
+    const homeCenterRef = useRef(homeCenter);
+    const [plusCenter, setPlusCenter] = useState({x: 0, y: 0});
+    const plusCenterRef = useRef(plusCenter);
 
     const joystickTouchContainerRef = useRef(null);
     const joystickTouchContainerDimensionsRef = useRef({x: 0, y: 0, width: 0, height: 0});
@@ -168,6 +172,13 @@ function App() {
             circleCenterRef.current = {x: x + width - (3 * LARGE_BUTTON_RADIUS) - LARGE_BUTTON_GAP, y: y + height - LARGE_BUTTON_RADIUS};
             setTriangleCenter({x: x + width - LARGE_BUTTON_RADIUS, y: y + height - (3 * LARGE_BUTTON_RADIUS) - LARGE_BUTTON_GAP});
             triangleCenterRef.current = {x: x + width - LARGE_BUTTON_RADIUS, y: y + height - (3 * LARGE_BUTTON_RADIUS) - LARGE_BUTTON_GAP};
+        }
+        if (homePlusContainerRef.current) {
+            const {x, y, width, height} = homePlusContainerRef.current.getBoundingClientRect();
+            setHomeCenter({x: x + SMALL_BUTTON_RADIUS, y: y + SMALL_BUTTON_RADIUS});
+            homeCenterRef.current = {x: x + SMALL_BUTTON_RADIUS, y: y + SMALL_BUTTON_RADIUS};
+            setPlusCenter({x: x + SMALL_BUTTON_RADIUS, y: y + height - SMALL_BUTTON_RADIUS});
+            plusCenterRef.current = {x: x + SMALL_BUTTON_RADIUS, y: y + height - SMALL_BUTTON_RADIUS};
         }
     }
 
@@ -232,6 +243,14 @@ function App() {
                 setTriangleState(identifier);
                 triangleStateRef.current = identifier;
             }
+            else if (clientX > homeCenterRef.current.x - SMALL_BUTTON_RADIUS && clientX < homeCenterRef.current.x + SMALL_BUTTON_RADIUS && clientY > homeCenterRef.current.y - SMALL_BUTTON_RADIUS && clientY < homeCenterRef.current.y + SMALL_BUTTON_RADIUS) {
+                setHomeState(identifier);
+                homeStateRef.current = identifier;
+            }
+            else if (clientX > plusCenterRef.current.x - SMALL_BUTTON_RADIUS && clientX < plusCenterRef.current.x + SMALL_BUTTON_RADIUS && clientY > plusCenterRef.current.y - SMALL_BUTTON_RADIUS && clientY < plusCenterRef.current.y + SMALL_BUTTON_RADIUS) {
+                setPlusState(identifier);
+                plusStateRef.current = identifier;
+            }
         }
     }
 
@@ -272,6 +291,22 @@ function App() {
                     setTriangleState(identifier);
                     triangleStateRef.current = identifier;
                 }
+                if (identifier === homeStateRef.current && (clientX < homeCenterRef.current.x - SMALL_BUTTON_RADIUS || clientX > homeCenterRef.current.x + SMALL_BUTTON_RADIUS || clientY < homeCenterRef.current.y - SMALL_BUTTON_RADIUS || clientY > homeCenterRef.current.y + SMALL_BUTTON_RADIUS)) {
+                    setHomeState(null);
+                    homeStateRef.current = null;
+                }
+                else if (identifier !== homeStateRef.current && clientX > homeCenterRef.current.x - SMALL_BUTTON_RADIUS && clientX < homeCenterRef.current.x + SMALL_BUTTON_RADIUS && clientY > homeCenterRef.current.y - SMALL_BUTTON_RADIUS && clientY < homeCenterRef.current.y + SMALL_BUTTON_RADIUS) {
+                    setHomeState(identifier);
+                    homeStateRef.current = identifier;
+                }
+                if (identifier === plusStateRef.current && (clientX < plusCenterRef.current.x - SMALL_BUTTON_RADIUS || clientX > plusCenterRef.current.x + SMALL_BUTTON_RADIUS || clientY < plusCenterRef.current.y - SMALL_BUTTON_RADIUS || clientY > plusCenterRef.current.y + SMALL_BUTTON_RADIUS)) {
+                    setPlusState(null);
+                    plusStateRef.current = null;
+                }
+                else if (identifier !== plusStateRef.current && clientX > plusCenterRef.current.x - SMALL_BUTTON_RADIUS && clientX < plusCenterRef.current.x + SMALL_BUTTON_RADIUS && clientY > plusCenterRef.current.y - SMALL_BUTTON_RADIUS && clientY < plusCenterRef.current.y + SMALL_BUTTON_RADIUS) {
+                    setPlusState(identifier);
+                    plusStateRef.current = identifier;
+                }
             }
         }
     }
@@ -295,6 +330,14 @@ function App() {
                 setTriangleState(null);
                 triangleStateRef.current = null;
             }
+            else if (identifier === homeStateRef.current) {
+                setHomeState(null);
+                homeStateRef.current = null;
+            }
+            else if (identifier === plusStateRef.current) {
+                setPlusState(null);
+                plusStateRef.current = null;
+            }
         }
         const {touches} = event;
         if (touches.length === 0) {
@@ -305,6 +348,10 @@ function App() {
             circleStateRef.current = null;
             setTriangleState(null);
             triangleStateRef.current = null;
+            setHomeState(null);
+            homeStateRef.current = null;
+            setPlusState(null);
+            plusStateRef.current = null;
         }
     }
 
