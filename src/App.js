@@ -112,10 +112,16 @@ function App() {
     const [joystickCenter, setJoystickCenter] = useState({x: 0, y: 0, id: null});
     const joystickCenterRef = useRef(joystickCenter);
     const [joystickOffset, setJoystickOffset] = useState({x: 0, y: 0});
-    const joystickOffsetRef = useRef(joystickOffset);
+
+    const [circleCenter, setCircleCenter] = useState({x: 0, y: 0});
+    const circleCenterRef = useRef(circleCenter);
+    const [triangleCenter, setTriangleCenter] = useState({x: 0, y: 0});
+    const triangleCenterRef = useRef(triangleCenter);
 
     const joystickTouchContainerRef = useRef(null);
     const joystickTouchContainerDimensionsRef = useRef({x: 0, y: 0, width: 0, height: 0});
+    const circleTriangleContainerRef = useRef(null);
+    const homePlusContainerRef = useRef(null);
 
     const [joystickState, setJoystickState] = useState({x: 0, y: 0, id: null});
     const joystickStateRef = useRef(joystickState);
@@ -151,34 +157,40 @@ function App() {
         }
     }
 
-    function setJoystickTouchArea() {
+    function setScreenLayout() {
         if (joystickTouchContainerRef.current) {
             const {x, y, width, height} = joystickTouchContainerRef.current.getBoundingClientRect();
             joystickTouchContainerDimensionsRef.current = {x, y, width, height};
+        }
+        if (circleTriangleContainerRef.current) {
+            const {x, y, width, height} = circleTriangleContainerRef.current.getBoundingClientRect();
+            setCircleCenter({x: x + width - (3 * LARGE_BUTTON_RADIUS) - LARGE_BUTTON_GAP, y: y + height - LARGE_BUTTON_RADIUS});
+            circleCenterRef.current = {x: x + width - (3 * LARGE_BUTTON_RADIUS) - LARGE_BUTTON_GAP, y: y + height - LARGE_BUTTON_RADIUS};
+            console.log({x: x + width - (3 * LARGE_BUTTON_RADIUS) - LARGE_BUTTON_GAP, y: y + height - LARGE_BUTTON_RADIUS});
         }
     }
 
     useEffect(() => {
         window.addEventListener('message', handleMessageFromParent);
-        window.addEventListener('resize', setJoystickTouchArea);
-        window.addEventListener('orientationchange', setJoystickTouchArea);
-        window.addEventListener('load', setJoystickTouchArea);
+        window.addEventListener('resize', setScreenLayout);
+        window.addEventListener('orientationchange', setScreenLayout);
+        window.addEventListener('load', setScreenLayout);
         window.addEventListener('touchstart', onTouchStart);
         window.addEventListener('touchmove', onTouchMove);
         window.addEventListener('touchend', onTouchEnd);
-        window.addEventListener('touchcancel', onTouchCancel);
+        window.addEventListener('touchcancel', onTouchEnd);
 
         sendMessageToParent(JSON.stringify({name: 'ready'}));
 
         return () => {
             window.removeEventListener('message', handleMessageFromParent);
-            window.removeEventListener('resize', setJoystickTouchArea);
-            window.removeEventListener('orientationchange', setJoystickTouchArea);
-            window.removeEventListener('load', setJoystickTouchArea);
+            window.removeEventListener('resize', setScreenLayout);
+            window.removeEventListener('orientationchange', setScreenLayout);
+            window.removeEventListener('load', setScreenLayout);
             window.removeEventListener('touchstart', onTouchStart);
             window.removeEventListener('touchmove', onTouchMove);
             window.removeEventListener('touchend', onTouchEnd);
-            window.removeEventListener('touchcancel', onTouchCancel);
+            window.removeEventListener('touchcancel', onTouchEnd);
         }
     }, []);
 
@@ -211,6 +223,10 @@ function App() {
                 joystickCenterRef.current = {x: clientX, y: clientY, id: identifier};
                 setJoystickOffset({x: 0, y: 0});
             }
+            else if (clientX > circleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < circleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > circleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < circleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
+                setCircleState(identifier);
+                circleStateRef.current = identifier;
+            }
         }
     }
 
@@ -234,6 +250,16 @@ function App() {
                     setJoystickOffset({x: offsetX, y: offsetY});
                 }
             }
+            else {
+                if (identifier === circleStateRef.current && (clientX < circleCenterRef.current.x - LARGE_BUTTON_RADIUS || clientX > circleCenterRef.current.x + LARGE_BUTTON_RADIUS || clientY < circleCenterRef.current.y - LARGE_BUTTON_RADIUS || clientY > circleCenterRef.current.y + LARGE_BUTTON_RADIUS)) {
+                    setCircleState(null);
+                    circleStateRef.current = null;
+                }
+                else if (identifier !== circleStateRef.current && clientX > circleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < circleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > circleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < circleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
+                    setCircleState(identifier);
+                    circleStateRef.current = identifier;
+                }
+            }
         }
     }
 
@@ -248,25 +274,9 @@ function App() {
                 joystickCenterRef.current = {x: 0, y: 0, id: null};
                 setJoystickOffset({x: 0, y: 0});
             }
-        }
-        const {touches} = event;
-        if (touches.length === 0) {
-            setJoystickCenter({x: 0, y: 0, id: null});
-            joystickCenterRef.current = {x: 0, y: 0, id: null};
-            setJoystickOffset({x: 0, y: 0});
-        }
-    }
-
-    const onTouchCancel = (event) => {
-        event.preventDefault();
-        const {changedTouches} = event;
-        for (let i = 0; i < changedTouches.length; i++) {
-            const touch = changedTouches[i];
-            const {identifier} = touch;
-            if (identifier === joystickCenterRef.current.id) {
-                setJoystickCenter({x: 0, y: 0, id: null});
-                joystickCenterRef.current = {x: 0, y: 0, id: null};
-                setJoystickOffset({x: 0, y: 0});
+            else if (identifier === circleStateRef.current) {
+                setCircleState(null);
+                circleStateRef.current = null;
             }
         }
         const {touches} = event;
@@ -274,9 +284,10 @@ function App() {
             setJoystickCenter({x: 0, y: 0, id: null});
             joystickCenterRef.current = {x: 0, y: 0, id: null};
             setJoystickOffset({x: 0, y: 0});
+            setCircleState(null);
+            circleStateRef.current = null;
         }
     }
-
 
     return (
         <ControllerPageBox>
@@ -319,7 +330,9 @@ function App() {
             </SideContainer>
             <MiddleContainer>
                 <Logo/>
-                <HomePlusContainer>
+                <HomePlusContainer
+                    ref={homePlusContainerRef}
+                >
                     {
                         homeState === null ?
                             <img src={'./assets/home.png'} alt={'home'} style={{width: SMALL_BUTTON_RADIUS * 2, height: SMALL_BUTTON_RADIUS * 2}}/>
@@ -335,18 +348,31 @@ function App() {
                 </HomePlusContainer>
             </MiddleContainer>
             <SideContainer align={'flex-end'} justify={'flex-end'}>
-                <SideContainer align={'flex-end'} justify={'flex-end'} style={{minWidth: MIN_JOYSTICK_DISPLAY_AREA_LENGTH, maxWidth: MAX_JOYSTICK_DISPLAY_AREA_LENGTH}}>
-                    {
-                        circleState === null ?
-                            <img src={'./assets/circle.png'} alt={'circle'} style={{width: LARGE_BUTTON_RADIUS * 2, height: LARGE_BUTTON_RADIUS * 2, marginBottom: LARGE_BUTTON_GAP}}/>
-                            :
-                            <img src={'./assets/circle-pressed.png'} alt={'circle pressed'} style={{width: LARGE_BUTTON_RADIUS * 2, height: LARGE_BUTTON_RADIUS * 2, marginBottom: LARGE_BUTTON_GAP}}/>
-                    }
+                <SideContainer
+                    align={'flex-end'}
+                    justify={'flex-end'}
+                    style={{minWidth: MIN_JOYSTICK_DISPLAY_AREA_LENGTH, maxWidth: MAX_JOYSTICK_DISPLAY_AREA_LENGTH}}
+                    ref={circleTriangleContainerRef}
+                >
                     {
                         triangleState === null ?
-                            <img src={'./assets/triangle.png'} alt={'triangle'} style={{width: LARGE_BUTTON_RADIUS * 2, height: LARGE_BUTTON_RADIUS * 2, marginRight: (LARGE_BUTTON_RADIUS * 2) + LARGE_BUTTON_GAP}}/>
+                            <img src={'./assets/triangle.png'} alt={'triangle'} style={{width: LARGE_BUTTON_RADIUS * 2, height: LARGE_BUTTON_RADIUS * 2, marginBottom: LARGE_BUTTON_GAP}}/>
                             :
-                            <img src={'./assets/triangle-pressed.png'} alt={'triangle pressed'} style={{width: LARGE_BUTTON_RADIUS * 2, height: LARGE_BUTTON_RADIUS * 2, marginRight: (LARGE_BUTTON_RADIUS * 2) + LARGE_BUTTON_GAP}}/>
+                            <img src={'./assets/triangle-pressed.png'} alt={'triangle pressed'} style={{width: LARGE_BUTTON_RADIUS * 2, height: LARGE_BUTTON_RADIUS * 2, marginBottom: LARGE_BUTTON_GAP}}/>
+                    }
+                    {
+                        circleState === null ?
+                            <img src={'./assets/circle.png'} alt={'circle'} style={{
+                                width: LARGE_BUTTON_RADIUS * 2,
+                                height: LARGE_BUTTON_RADIUS * 2,
+                                marginRight: (LARGE_BUTTON_RADIUS * 2) + LARGE_BUTTON_GAP
+                            }}/>
+                            :
+                            <img src={'./assets/circle-pressed.png'} alt={'circle pressed'} style={{
+                                width: LARGE_BUTTON_RADIUS * 2,
+                                height: LARGE_BUTTON_RADIUS * 2,
+                                marginRight: (LARGE_BUTTON_RADIUS * 2) + LARGE_BUTTON_GAP
+                            }}/>
                     }
                 </SideContainer>
             </SideContainer>

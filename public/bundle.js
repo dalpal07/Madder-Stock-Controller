@@ -16089,7 +16089,16 @@ Please use another name.` );
 	    x: 0,
 	    y: 0
 	  });
-	  reactExports.useRef(joystickOffset);
+	  const [circleCenter, setCircleCenter] = reactExports.useState({
+	    x: 0,
+	    y: 0
+	  });
+	  const circleCenterRef = reactExports.useRef(circleCenter);
+	  const [triangleCenter, setTriangleCenter] = reactExports.useState({
+	    x: 0,
+	    y: 0
+	  });
+	  reactExports.useRef(triangleCenter);
 	  const joystickTouchContainerRef = reactExports.useRef(null);
 	  const joystickTouchContainerDimensionsRef = reactExports.useRef({
 	    x: 0,
@@ -16097,6 +16106,8 @@ Please use another name.` );
 	    width: 0,
 	    height: 0
 	  });
+	  const circleTriangleContainerRef = reactExports.useRef(null);
+	  const homePlusContainerRef = reactExports.useRef(null);
 	  const [joystickState, setJoystickState] = reactExports.useState({
 	    x: 0,
 	    y: 0,
@@ -16104,7 +16115,7 @@ Please use another name.` );
 	  });
 	  reactExports.useRef(joystickState);
 	  const [circleState, setCircleState] = reactExports.useState(null);
-	  reactExports.useRef(circleState);
+	  const circleStateRef = reactExports.useRef(circleState);
 	  const [triangleState, setTriangleState] = reactExports.useState(null);
 	  reactExports.useRef(triangleState);
 	  const [homeState, setHomeState] = reactExports.useState(null);
@@ -16134,7 +16145,7 @@ Please use another name.` );
 	      setPlayerName(msg.player);
 	    }
 	  }
-	  function setJoystickTouchArea() {
+	  function setScreenLayout() {
 	    if (joystickTouchContainerRef.current) {
 	      const {
 	        x,
@@ -16149,28 +16160,48 @@ Please use another name.` );
 	        height
 	      };
 	    }
+	    if (circleTriangleContainerRef.current) {
+	      const {
+	        x,
+	        y,
+	        width,
+	        height
+	      } = circleTriangleContainerRef.current.getBoundingClientRect();
+	      setCircleCenter({
+	        x: x + width - 3 * LARGE_BUTTON_RADIUS - LARGE_BUTTON_GAP,
+	        y: y + height - LARGE_BUTTON_RADIUS
+	      });
+	      circleCenterRef.current = {
+	        x: x + width - 3 * LARGE_BUTTON_RADIUS - LARGE_BUTTON_GAP,
+	        y: y + height - LARGE_BUTTON_RADIUS
+	      };
+	      console.log({
+	        x: x + width - 3 * LARGE_BUTTON_RADIUS - LARGE_BUTTON_GAP,
+	        y: y + height - LARGE_BUTTON_RADIUS
+	      });
+	    }
 	  }
 	  reactExports.useEffect(() => {
 	    window.addEventListener('message', handleMessageFromParent);
-	    window.addEventListener('resize', setJoystickTouchArea);
-	    window.addEventListener('orientationchange', setJoystickTouchArea);
-	    window.addEventListener('load', setJoystickTouchArea);
+	    window.addEventListener('resize', setScreenLayout);
+	    window.addEventListener('orientationchange', setScreenLayout);
+	    window.addEventListener('load', setScreenLayout);
 	    window.addEventListener('touchstart', onTouchStart);
 	    window.addEventListener('touchmove', onTouchMove);
 	    window.addEventListener('touchend', onTouchEnd);
-	    window.addEventListener('touchcancel', onTouchCancel);
+	    window.addEventListener('touchcancel', onTouchEnd);
 	    sendMessageToParent(JSON.stringify({
 	      name: 'ready'
 	    }));
 	    return () => {
 	      window.removeEventListener('message', handleMessageFromParent);
-	      window.removeEventListener('resize', setJoystickTouchArea);
-	      window.removeEventListener('orientationchange', setJoystickTouchArea);
-	      window.removeEventListener('load', setJoystickTouchArea);
+	      window.removeEventListener('resize', setScreenLayout);
+	      window.removeEventListener('orientationchange', setScreenLayout);
+	      window.removeEventListener('load', setScreenLayout);
 	      window.removeEventListener('touchstart', onTouchStart);
 	      window.removeEventListener('touchmove', onTouchMove);
 	      window.removeEventListener('touchend', onTouchEnd);
-	      window.removeEventListener('touchcancel', onTouchCancel);
+	      window.removeEventListener('touchcancel', onTouchEnd);
 	    };
 	  }, []);
 	  reactExports.useEffect(() => {
@@ -16228,6 +16259,9 @@ Please use another name.` );
 	          x: 0,
 	          y: 0
 	        });
+	      } else if (clientX > circleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < circleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > circleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < circleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
+	        setCircleState(identifier);
+	        circleStateRef.current = identifier;
 	      }
 	    }
 	  };
@@ -16265,6 +16299,14 @@ Please use another name.` );
 	            y: offsetY
 	          });
 	        }
+	      } else {
+	        if (identifier === circleStateRef.current && (clientX < circleCenterRef.current.x - LARGE_BUTTON_RADIUS || clientX > circleCenterRef.current.x + LARGE_BUTTON_RADIUS || clientY < circleCenterRef.current.y - LARGE_BUTTON_RADIUS || clientY > circleCenterRef.current.y + LARGE_BUTTON_RADIUS)) {
+	          setCircleState(null);
+	          circleStateRef.current = null;
+	        } else if (identifier !== circleStateRef.current && clientX > circleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < circleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > circleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < circleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
+	          setCircleState(identifier);
+	          circleStateRef.current = identifier;
+	        }
 	      }
 	    }
 	  };
@@ -16293,6 +16335,9 @@ Please use another name.` );
 	          x: 0,
 	          y: 0
 	        });
+	      } else if (identifier === circleStateRef.current) {
+	        setCircleState(null);
+	        circleStateRef.current = null;
 	      }
 	    }
 	    const {
@@ -16313,53 +16358,8 @@ Please use another name.` );
 	        x: 0,
 	        y: 0
 	      });
-	    }
-	  };
-	  const onTouchCancel = event => {
-	    event.preventDefault();
-	    const {
-	      changedTouches
-	    } = event;
-	    for (let i = 0; i < changedTouches.length; i++) {
-	      const touch = changedTouches[i];
-	      const {
-	        identifier
-	      } = touch;
-	      if (identifier === joystickCenterRef.current.id) {
-	        setJoystickCenter({
-	          x: 0,
-	          y: 0,
-	          id: null
-	        });
-	        joystickCenterRef.current = {
-	          x: 0,
-	          y: 0,
-	          id: null
-	        };
-	        setJoystickOffset({
-	          x: 0,
-	          y: 0
-	        });
-	      }
-	    }
-	    const {
-	      touches
-	    } = event;
-	    if (touches.length === 0) {
-	      setJoystickCenter({
-	        x: 0,
-	        y: 0,
-	        id: null
-	      });
-	      joystickCenterRef.current = {
-	        x: 0,
-	        y: 0,
-	        id: null
-	      };
-	      setJoystickOffset({
-	        x: 0,
-	        y: 0
-	      });
+	      setCircleState(null);
+	      circleStateRef.current = null;
 	    }
 	  };
 	  return /*#__PURE__*/React.createElement(ControllerPageBox, null, /*#__PURE__*/React.createElement(SideContainer, {
@@ -16392,7 +16392,9 @@ Please use another name.` );
 	      border: '5px solid #BB3D3D',
 	      filter: 'drop-shadow(0px 0px 20px rgba(0, 0, 0, 0.15)) drop-shadow(0px 0px 7px rgba(0, 0, 0, 0.20))'
 	    }
-	  }))))), /*#__PURE__*/React.createElement(MiddleContainer, null, /*#__PURE__*/React.createElement(Logo, null), /*#__PURE__*/React.createElement(HomePlusContainer, null, homeState === null ? /*#__PURE__*/React.createElement("img", {
+	  }))))), /*#__PURE__*/React.createElement(MiddleContainer, null, /*#__PURE__*/React.createElement(Logo, null), /*#__PURE__*/React.createElement(HomePlusContainer, {
+	    ref: homePlusContainerRef
+	  }, homeState === null ? /*#__PURE__*/React.createElement("img", {
 	    src: './assets/home.png',
 	    alt: 'home',
 	    style: {
@@ -16429,34 +16431,35 @@ Please use another name.` );
 	    style: {
 	      minWidth: MIN_JOYSTICK_DISPLAY_AREA_LENGTH,
 	      maxWidth: MAX_JOYSTICK_DISPLAY_AREA_LENGTH
-	    }
-	  }, circleState === null ? /*#__PURE__*/React.createElement("img", {
-	    src: './assets/circle.png',
-	    alt: 'circle',
+	    },
+	    ref: circleTriangleContainerRef
+	  }, triangleState === null ? /*#__PURE__*/React.createElement("img", {
+	    src: './assets/triangle.png',
+	    alt: 'triangle',
 	    style: {
 	      width: LARGE_BUTTON_RADIUS * 2,
 	      height: LARGE_BUTTON_RADIUS * 2,
 	      marginBottom: LARGE_BUTTON_GAP
 	    }
 	  }) : /*#__PURE__*/React.createElement("img", {
-	    src: './assets/circle-pressed.png',
-	    alt: 'circle pressed',
+	    src: './assets/triangle-pressed.png',
+	    alt: 'triangle pressed',
 	    style: {
 	      width: LARGE_BUTTON_RADIUS * 2,
 	      height: LARGE_BUTTON_RADIUS * 2,
 	      marginBottom: LARGE_BUTTON_GAP
 	    }
-	  }), triangleState === null ? /*#__PURE__*/React.createElement("img", {
-	    src: './assets/triangle.png',
-	    alt: 'triangle',
+	  }), circleState === null ? /*#__PURE__*/React.createElement("img", {
+	    src: './assets/circle.png',
+	    alt: 'circle',
 	    style: {
 	      width: LARGE_BUTTON_RADIUS * 2,
 	      height: LARGE_BUTTON_RADIUS * 2,
 	      marginRight: LARGE_BUTTON_RADIUS * 2 + LARGE_BUTTON_GAP
 	    }
 	  }) : /*#__PURE__*/React.createElement("img", {
-	    src: './assets/triangle-pressed.png',
-	    alt: 'triangle pressed',
+	    src: './assets/circle-pressed.png',
+	    alt: 'circle pressed',
 	    style: {
 	      width: LARGE_BUTTON_RADIUS * 2,
 	      height: LARGE_BUTTON_RADIUS * 2,
