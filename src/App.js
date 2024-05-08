@@ -1,9 +1,9 @@
 import {Box, styled} from "@mui/material";
 import React, {useEffect, useMemo, useRef, useState} from "react";
 
-const FULL_JOYSTICK_RADIUS = 86;
+const FULL_JOYSTICK_RADIUS = 81;
 const JOYSTICK_KNOB_RADIUS = 50;
-const MAX_JOYSTICK_DISTANCE = 35;
+const MAX_JOYSTICK_DISTANCE = 50;
 const MAX_JOYSTICK_DISPLAY_AREA_LENGTH = 350;
 const MIN_JOYSTICK_DISPLAY_AREA_LENGTH = 275;
 const MAX_JOYSTICK_TOUCH_AREA_LENGTH = MAX_JOYSTICK_DISPLAY_AREA_LENGTH - (FULL_JOYSTICK_RADIUS * 2);
@@ -33,6 +33,7 @@ const ControllerPageBox = styled(Box)({
     touchAction: 'none',
     padding: `${PADDING_Y}px ${PADDING_X}px`,
     gap: COMPONENT_GAP,
+    pointerEvents: 'none',
 });
 
 const SideContainer = styled(Box)(({align = 'center', justify = 'center'}) => ({
@@ -153,7 +154,7 @@ function App() {
     function setJoystickTouchArea() {
         if (joystickTouchContainerRef.current) {
             const {x, y, width, height} = joystickTouchContainerRef.current.getBoundingClientRect();
-            console.log({x, y, width, height});
+            joystickTouchContainerDimensionsRef.current = {x, y, width, height};
         }
     }
 
@@ -162,6 +163,10 @@ function App() {
         window.addEventListener('resize', setJoystickTouchArea);
         window.addEventListener('orientationchange', setJoystickTouchArea);
         window.addEventListener('load', setJoystickTouchArea);
+        window.addEventListener('touchstart', onTouchStart);
+        window.addEventListener('touchmove', onTouchMove);
+        window.addEventListener('touchend', onTouchEnd);
+        window.addEventListener('touchcancel', onTouchCancel);
 
         sendMessageToParent(JSON.stringify({name: 'ready'}));
 
@@ -170,15 +175,22 @@ function App() {
             window.removeEventListener('resize', setJoystickTouchArea);
             window.removeEventListener('orientationchange', setJoystickTouchArea);
             window.removeEventListener('load', setJoystickTouchArea);
+            window.removeEventListener('touchstart', onTouchStart);
+            window.removeEventListener('touchmove', onTouchMove);
+            window.removeEventListener('touchend', onTouchEnd);
+            window.removeEventListener('touchcancel', onTouchCancel);
         }
     }, []);
 
     useEffect(() => {
+        const {x, y} = joystickOffset;
+        const normalizedX = x / MAX_JOYSTICK_DISTANCE * 100;
+        const normalizedY = y / MAX_JOYSTICK_DISTANCE * 100;
         const controllerState = {
             name: playerName,
             joystick: {
-                x: joystickState.x,
-                y: joystickState.y,
+                x: normalizedX,
+                y: normalizedY,
             },
             circle: circleState !== null,
             triangle: triangleState !== null,
@@ -186,6 +198,84 @@ function App() {
         }
         sendMessageToParent(JSON.stringify({name: 'controller-state', state: JSON.stringify(controllerState)}));
     }, [joystickState, circleState, triangleState, plusState]);
+
+    const onTouchStart = (event) => {
+        event.preventDefault();
+        const {changedTouches} = event;
+        for (let i = 0; i < changedTouches.length; i++) {
+            const touch = changedTouches[i];
+            const {clientX, clientY, identifier} = touch;
+            const {x, y, width, height} = joystickTouchContainerDimensionsRef.current;
+            if (clientX > x && clientX < x + width && clientY > y && clientY < y + height) {
+                setJoystickCenter({x: clientX, y: clientY, id: identifier});
+                joystickCenterRef.current = {x: clientX, y: clientY, id: identifier};
+                setJoystickOffset({x: 0, y: 0});
+            }
+        }
+    }
+
+    const onTouchMove = (event) => {
+        event.preventDefault();
+        const {changedTouches} = event;
+        for (let i = 0; i < changedTouches.length; i++) {
+            const touch = changedTouches[i];
+            const {clientX, clientY, identifier} = touch;
+            if (identifier === joystickCenterRef.current.id) {
+                const {x, y} = joystickCenterRef.current;
+                const offsetX = clientX - x;
+                const offsetY = y - clientY;
+                const distance = Math.sqrt(offsetX * offsetX + offsetY * offsetY);
+                if (distance > MAX_JOYSTICK_DISTANCE) {
+                    const angle = Math.atan2(offsetY, offsetX);
+                    const x = Math.cos(angle) * MAX_JOYSTICK_DISTANCE;
+                    const y = Math.sin(angle) * MAX_JOYSTICK_DISTANCE;
+                    setJoystickOffset({x, y});
+                } else {
+                    setJoystickOffset({x: offsetX, y: offsetY});
+                }
+            }
+        }
+    }
+
+    const onTouchEnd = (event) => {
+        event.preventDefault();
+        const {changedTouches} = event;
+        for (let i = 0; i < changedTouches.length; i++) {
+            const touch = changedTouches[i];
+            const {identifier} = touch;
+            if (identifier === joystickCenterRef.current.id) {
+                setJoystickCenter({x: 0, y: 0, id: null});
+                joystickCenterRef.current = {x: 0, y: 0, id: null};
+                setJoystickOffset({x: 0, y: 0});
+            }
+        }
+        const {touches} = event;
+        if (touches.length === 0) {
+            setJoystickCenter({x: 0, y: 0, id: null});
+            joystickCenterRef.current = {x: 0, y: 0, id: null};
+            setJoystickOffset({x: 0, y: 0});
+        }
+    }
+
+    const onTouchCancel = (event) => {
+        event.preventDefault();
+        const {changedTouches} = event;
+        for (let i = 0; i < changedTouches.length; i++) {
+            const touch = changedTouches[i];
+            const {identifier} = touch;
+            if (identifier === joystickCenterRef.current.id) {
+                setJoystickCenter({x: 0, y: 0, id: null});
+                joystickCenterRef.current = {x: 0, y: 0, id: null};
+                setJoystickOffset({x: 0, y: 0});
+            }
+        }
+        const {touches} = event;
+        if (touches.length === 0) {
+            setJoystickCenter({x: 0, y: 0, id: null});
+            joystickCenterRef.current = {x: 0, y: 0, id: null};
+            setJoystickOffset({x: 0, y: 0});
+        }
+    }
 
 
     return (
@@ -210,8 +300,11 @@ function App() {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
+                                    transform: 'translate3d(0, 0, 0)',
                                 }}>
                                     <Box style={{
+                                        marginLeft: joystickOffset.x,
+                                        marginBottom: joystickOffset.y,
                                         width: JOYSTICK_KNOB_RADIUS * 2,
                                         height: JOYSTICK_KNOB_RADIUS * 2,
                                         borderRadius: '50%',

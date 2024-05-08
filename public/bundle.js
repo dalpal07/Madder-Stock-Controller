@@ -15961,8 +15961,9 @@ Please use another name.` );
 	} ;
 	var Box$1 = Box;
 
-	const FULL_JOYSTICK_RADIUS = 86;
+	const FULL_JOYSTICK_RADIUS = 81;
 	const JOYSTICK_KNOB_RADIUS = 50;
+	const MAX_JOYSTICK_DISTANCE = 50;
 	const MAX_JOYSTICK_DISPLAY_AREA_LENGTH = 350;
 	const MIN_JOYSTICK_DISPLAY_AREA_LENGTH = 275;
 	const SMALL_BUTTON_RADIUS = 25.5;
@@ -15986,7 +15987,8 @@ Please use another name.` );
 	  backgroundColor: '#ECECEC',
 	  touchAction: 'none',
 	  padding: `${PADDING_Y}px ${PADDING_X}px`,
-	  gap: COMPONENT_GAP
+	  gap: COMPONENT_GAP,
+	  pointerEvents: 'none'
 	});
 	const SideContainer = styled$1(Box$1)(({
 	  align = 'center',
@@ -16082,14 +16084,14 @@ Please use another name.` );
 	    y: 0,
 	    id: null
 	  });
-	  reactExports.useRef(joystickCenter);
+	  const joystickCenterRef = reactExports.useRef(joystickCenter);
 	  const [joystickOffset, setJoystickOffset] = reactExports.useState({
 	    x: 0,
 	    y: 0
 	  });
 	  reactExports.useRef(joystickOffset);
 	  const joystickTouchContainerRef = reactExports.useRef(null);
-	  reactExports.useRef({
+	  const joystickTouchContainerDimensionsRef = reactExports.useRef({
 	    x: 0,
 	    y: 0,
 	    width: 0,
@@ -16140,12 +16142,12 @@ Please use another name.` );
 	        width,
 	        height
 	      } = joystickTouchContainerRef.current.getBoundingClientRect();
-	      console.log({
+	      joystickTouchContainerDimensionsRef.current = {
 	        x,
 	        y,
 	        width,
 	        height
-	      });
+	      };
 	    }
 	  }
 	  reactExports.useEffect(() => {
@@ -16153,6 +16155,10 @@ Please use another name.` );
 	    window.addEventListener('resize', setJoystickTouchArea);
 	    window.addEventListener('orientationchange', setJoystickTouchArea);
 	    window.addEventListener('load', setJoystickTouchArea);
+	    window.addEventListener('touchstart', onTouchStart);
+	    window.addEventListener('touchmove', onTouchMove);
+	    window.addEventListener('touchend', onTouchEnd);
+	    window.addEventListener('touchcancel', onTouchCancel);
 	    sendMessageToParent(JSON.stringify({
 	      name: 'ready'
 	    }));
@@ -16161,14 +16167,24 @@ Please use another name.` );
 	      window.removeEventListener('resize', setJoystickTouchArea);
 	      window.removeEventListener('orientationchange', setJoystickTouchArea);
 	      window.removeEventListener('load', setJoystickTouchArea);
+	      window.removeEventListener('touchstart', onTouchStart);
+	      window.removeEventListener('touchmove', onTouchMove);
+	      window.removeEventListener('touchend', onTouchEnd);
+	      window.removeEventListener('touchcancel', onTouchCancel);
 	    };
 	  }, []);
 	  reactExports.useEffect(() => {
+	    const {
+	      x,
+	      y
+	    } = joystickOffset;
+	    const normalizedX = x / MAX_JOYSTICK_DISTANCE * 100;
+	    const normalizedY = y / MAX_JOYSTICK_DISTANCE * 100;
 	    const controllerState = {
 	      name: playerName,
 	      joystick: {
-	        x: joystickState.x,
-	        y: joystickState.y
+	        x: normalizedX,
+	        y: normalizedY
 	      },
 	      circle: circleState !== null,
 	      triangle: triangleState !== null,
@@ -16179,6 +16195,173 @@ Please use another name.` );
 	      state: JSON.stringify(controllerState)
 	    }));
 	  }, [joystickState, circleState, triangleState, plusState]);
+	  const onTouchStart = event => {
+	    event.preventDefault();
+	    const {
+	      changedTouches
+	    } = event;
+	    for (let i = 0; i < changedTouches.length; i++) {
+	      const touch = changedTouches[i];
+	      const {
+	        clientX,
+	        clientY,
+	        identifier
+	      } = touch;
+	      const {
+	        x,
+	        y,
+	        width,
+	        height
+	      } = joystickTouchContainerDimensionsRef.current;
+	      if (clientX > x && clientX < x + width && clientY > y && clientY < y + height) {
+	        setJoystickCenter({
+	          x: clientX,
+	          y: clientY,
+	          id: identifier
+	        });
+	        joystickCenterRef.current = {
+	          x: clientX,
+	          y: clientY,
+	          id: identifier
+	        };
+	        setJoystickOffset({
+	          x: 0,
+	          y: 0
+	        });
+	      }
+	    }
+	  };
+	  const onTouchMove = event => {
+	    event.preventDefault();
+	    const {
+	      changedTouches
+	    } = event;
+	    for (let i = 0; i < changedTouches.length; i++) {
+	      const touch = changedTouches[i];
+	      const {
+	        clientX,
+	        clientY,
+	        identifier
+	      } = touch;
+	      if (identifier === joystickCenterRef.current.id) {
+	        const {
+	          x,
+	          y
+	        } = joystickCenterRef.current;
+	        const offsetX = clientX - x;
+	        const offsetY = y - clientY;
+	        const distance = Math.sqrt(offsetX * offsetX + offsetY * offsetY);
+	        if (distance > MAX_JOYSTICK_DISTANCE) {
+	          const angle = Math.atan2(offsetY, offsetX);
+	          const x = Math.cos(angle) * MAX_JOYSTICK_DISTANCE;
+	          const y = Math.sin(angle) * MAX_JOYSTICK_DISTANCE;
+	          setJoystickOffset({
+	            x,
+	            y
+	          });
+	        } else {
+	          setJoystickOffset({
+	            x: offsetX,
+	            y: offsetY
+	          });
+	        }
+	      }
+	    }
+	  };
+	  const onTouchEnd = event => {
+	    event.preventDefault();
+	    const {
+	      changedTouches
+	    } = event;
+	    for (let i = 0; i < changedTouches.length; i++) {
+	      const touch = changedTouches[i];
+	      const {
+	        identifier
+	      } = touch;
+	      if (identifier === joystickCenterRef.current.id) {
+	        setJoystickCenter({
+	          x: 0,
+	          y: 0,
+	          id: null
+	        });
+	        joystickCenterRef.current = {
+	          x: 0,
+	          y: 0,
+	          id: null
+	        };
+	        setJoystickOffset({
+	          x: 0,
+	          y: 0
+	        });
+	      }
+	    }
+	    const {
+	      touches
+	    } = event;
+	    if (touches.length === 0) {
+	      setJoystickCenter({
+	        x: 0,
+	        y: 0,
+	        id: null
+	      });
+	      joystickCenterRef.current = {
+	        x: 0,
+	        y: 0,
+	        id: null
+	      };
+	      setJoystickOffset({
+	        x: 0,
+	        y: 0
+	      });
+	    }
+	  };
+	  const onTouchCancel = event => {
+	    event.preventDefault();
+	    const {
+	      changedTouches
+	    } = event;
+	    for (let i = 0; i < changedTouches.length; i++) {
+	      const touch = changedTouches[i];
+	      const {
+	        identifier
+	      } = touch;
+	      if (identifier === joystickCenterRef.current.id) {
+	        setJoystickCenter({
+	          x: 0,
+	          y: 0,
+	          id: null
+	        });
+	        joystickCenterRef.current = {
+	          x: 0,
+	          y: 0,
+	          id: null
+	        };
+	        setJoystickOffset({
+	          x: 0,
+	          y: 0
+	        });
+	      }
+	    }
+	    const {
+	      touches
+	    } = event;
+	    if (touches.length === 0) {
+	      setJoystickCenter({
+	        x: 0,
+	        y: 0,
+	        id: null
+	      });
+	      joystickCenterRef.current = {
+	        x: 0,
+	        y: 0,
+	        id: null
+	      };
+	      setJoystickOffset({
+	        x: 0,
+	        y: 0
+	      });
+	    }
+	  };
 	  return /*#__PURE__*/React.createElement(ControllerPageBox, null, /*#__PURE__*/React.createElement(SideContainer, {
 	    align: 'flex-start',
 	    justify: 'flex-end'
@@ -16195,10 +16378,13 @@ Please use another name.` );
 	      backgroundColor: '#DFDFDF',
 	      display: 'flex',
 	      alignItems: 'center',
-	      justifyContent: 'center'
+	      justifyContent: 'center',
+	      transform: 'translate3d(0, 0, 0)'
 	    }
 	  }, /*#__PURE__*/React.createElement(Box$1, {
 	    style: {
+	      marginLeft: joystickOffset.x,
+	      marginBottom: joystickOffset.y,
 	      width: JOYSTICK_KNOB_RADIUS * 2,
 	      height: JOYSTICK_KNOB_RADIUS * 2,
 	      borderRadius: '50%',
