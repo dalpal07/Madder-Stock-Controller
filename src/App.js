@@ -127,8 +127,6 @@ function App() {
     const circleTriangleContainerRef = useRef(null);
     const homePlusContainerRef = useRef(null);
 
-    const [joystickState, setJoystickState] = useState({x: 0, y: 0, id: null});
-    const joystickStateRef = useRef(joystickState);
     const [circleState, setCircleState] = useState(null);
     const circleStateRef = useRef(circleState);
     const [triangleState, setTriangleState] = useState(null);
@@ -222,7 +220,7 @@ function App() {
             plus: plusState !== null,
         }
         sendMessageToParent(JSON.stringify({name: 'controller-state', state: JSON.stringify(controllerState)}));
-    }, [joystickState, circleState, triangleState, plusState]);
+    }, [circleState, triangleState, plusState, joystickOffset]);
 
     const onTouchStart = (event) => {
         event.preventDefault();

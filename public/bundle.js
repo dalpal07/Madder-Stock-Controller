@@ -16118,12 +16118,6 @@ Please use another name.` );
 	  });
 	  const circleTriangleContainerRef = reactExports.useRef(null);
 	  const homePlusContainerRef = reactExports.useRef(null);
-	  const [joystickState, setJoystickState] = reactExports.useState({
-	    x: 0,
-	    y: 0,
-	    id: null
-	  });
-	  reactExports.useRef(joystickState);
 	  const [circleState, setCircleState] = reactExports.useState(null);
 	  const circleStateRef = reactExports.useRef(circleState);
 	  const [triangleState, setTriangleState] = reactExports.useState(null);
@@ -16264,7 +16258,7 @@ Please use another name.` );
 	      name: 'controller-state',
 	      state: JSON.stringify(controllerState)
 	    }));
-	  }, [joystickState, circleState, triangleState, plusState]);
+	  }, [circleState, triangleState, plusState, joystickOffset]);
 	  const onTouchStart = event => {
 	    event.preventDefault();
 	    const {
