@@ -16283,6 +16283,10 @@ Please use another name.` );
 	        height
 	      } = joystickTouchContainerDimensionsRef.current;
 	      if (clientX > x && clientX < x + width && clientY > y && clientY < y + height) {
+	        sendMessageToParent(JSON.stringify({
+	          name: "haptic",
+	          type: "medium"
+	        }));
 	        setJoystickCenter({
 	          x: clientX,
 	          y: clientY,
@@ -16298,15 +16302,31 @@ Please use another name.` );
 	          y: 0
 	        });
 	      } else if (clientX > circleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < circleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > circleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < circleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
+	        sendMessageToParent(JSON.stringify({
+	          name: "haptic",
+	          type: "medium"
+	        }));
 	        setCircleState(identifier);
 	        circleStateRef.current = identifier;
 	      } else if (clientX > triangleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < triangleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > triangleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < triangleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
+	        sendMessageToParent(JSON.stringify({
+	          name: "haptic",
+	          type: "medium"
+	        }));
 	        setTriangleState(identifier);
 	        triangleStateRef.current = identifier;
 	      } else if (clientX > homeCenterRef.current.x - SMALL_BUTTON_RADIUS && clientX < homeCenterRef.current.x + SMALL_BUTTON_RADIUS && clientY > homeCenterRef.current.y - SMALL_BUTTON_RADIUS && clientY < homeCenterRef.current.y + SMALL_BUTTON_RADIUS) {
+	        sendMessageToParent(JSON.stringify({
+	          name: "haptic",
+	          type: "light"
+	        }));
 	        setHomeState(identifier);
 	        homeStateRef.current = identifier;
 	      } else if (clientX > plusCenterRef.current.x - SMALL_BUTTON_RADIUS && clientX < plusCenterRef.current.x + SMALL_BUTTON_RADIUS && clientY > plusCenterRef.current.y - SMALL_BUTTON_RADIUS && clientY < plusCenterRef.current.y + SMALL_BUTTON_RADIUS) {
+	        sendMessageToParent(JSON.stringify({
+	          name: "haptic",
+	          type: "light"
+	        }));
 	        setPlusState(identifier);
 	        plusStateRef.current = identifier;
 	      }
@@ -16351,6 +16371,10 @@ Please use another name.` );
 	          setCircleState(null);
 	          circleStateRef.current = null;
 	        } else if (identifier !== circleStateRef.current && clientX > circleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < circleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > circleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < circleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
+	          sendMessageToParent(JSON.stringify({
+	            name: "haptic",
+	            type: "medium"
+	          }));
 	          setCircleState(identifier);
 	          circleStateRef.current = identifier;
 	        }
@@ -16358,6 +16382,10 @@ Please use another name.` );
 	          setTriangleState(null);
 	          triangleStateRef.current = null;
 	        } else if (identifier !== triangleStateRef.current && clientX > triangleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < triangleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > triangleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < triangleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
+	          sendMessageToParent(JSON.stringify({
+	            name: "haptic",
+	            type: "medium"
+	          }));
 	          setTriangleState(identifier);
 	          triangleStateRef.current = identifier;
 	        }
@@ -16365,6 +16393,10 @@ Please use another name.` );
 	          setHomeState(null);
 	          homeStateRef.current = null;
 	        } else if (identifier !== homeStateRef.current && clientX > homeCenterRef.current.x - SMALL_BUTTON_RADIUS && clientX < homeCenterRef.current.x + SMALL_BUTTON_RADIUS && clientY > homeCenterRef.current.y - SMALL_BUTTON_RADIUS && clientY < homeCenterRef.current.y + SMALL_BUTTON_RADIUS) {
+	          sendMessageToParent(JSON.stringify({
+	            name: "haptic",
+	            type: "light"
+	          }));
 	          setHomeState(identifier);
 	          homeStateRef.current = identifier;
 	        }
@@ -16372,6 +16404,10 @@ Please use another name.` );
 	          setPlusState(null);
 	          plusStateRef.current = null;
 	        } else if (identifier !== plusStateRef.current && clientX > plusCenterRef.current.x - SMALL_BUTTON_RADIUS && clientX < plusCenterRef.current.x + SMALL_BUTTON_RADIUS && clientY > plusCenterRef.current.y - SMALL_BUTTON_RADIUS && clientY < plusCenterRef.current.y + SMALL_BUTTON_RADIUS) {
+	          sendMessageToParent(JSON.stringify({
+	            name: "haptic",
+	            type: "light"
+	          }));
 	          setPlusState(identifier);
 	          plusStateRef.current = identifier;
 	        }
@@ -16410,6 +16446,9 @@ Please use another name.` );
 	        setTriangleState(null);
 	        triangleStateRef.current = null;
 	      } else if (identifier === homeStateRef.current) {
+	        sendMessageToParent(JSON.stringify({
+	          name: 'exit-confirmation'
+	        }));
 	        setHomeState(null);
 	        homeStateRef.current = null;
 	      } else if (identifier === plusStateRef.current) {
