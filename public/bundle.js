@@ -16098,7 +16098,7 @@ Please use another name.` );
 	    x: 0,
 	    y: 0
 	  });
-	  reactExports.useRef(triangleCenter);
+	  const triangleCenterRef = reactExports.useRef(triangleCenter);
 	  const joystickTouchContainerRef = reactExports.useRef(null);
 	  const joystickTouchContainerDimensionsRef = reactExports.useRef({
 	    x: 0,
@@ -16117,7 +16117,7 @@ Please use another name.` );
 	  const [circleState, setCircleState] = reactExports.useState(null);
 	  const circleStateRef = reactExports.useRef(circleState);
 	  const [triangleState, setTriangleState] = reactExports.useState(null);
-	  reactExports.useRef(triangleState);
+	  const triangleStateRef = reactExports.useRef(triangleState);
 	  const [homeState, setHomeState] = reactExports.useState(null);
 	  reactExports.useRef(homeState);
 	  const [plusState, setPlusState] = reactExports.useState(null);
@@ -16175,10 +16175,14 @@ Please use another name.` );
 	        x: x + width - 3 * LARGE_BUTTON_RADIUS - LARGE_BUTTON_GAP,
 	        y: y + height - LARGE_BUTTON_RADIUS
 	      };
-	      console.log({
-	        x: x + width - 3 * LARGE_BUTTON_RADIUS - LARGE_BUTTON_GAP,
-	        y: y + height - LARGE_BUTTON_RADIUS
+	      setTriangleCenter({
+	        x: x + width - LARGE_BUTTON_RADIUS,
+	        y: y + height - 3 * LARGE_BUTTON_RADIUS - LARGE_BUTTON_GAP
 	      });
+	      triangleCenterRef.current = {
+	        x: x + width - LARGE_BUTTON_RADIUS,
+	        y: y + height - 3 * LARGE_BUTTON_RADIUS - LARGE_BUTTON_GAP
+	      };
 	    }
 	  }
 	  reactExports.useEffect(() => {
@@ -16262,6 +16266,9 @@ Please use another name.` );
 	      } else if (clientX > circleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < circleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > circleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < circleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
 	        setCircleState(identifier);
 	        circleStateRef.current = identifier;
+	      } else if (clientX > triangleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < triangleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > triangleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < triangleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
+	        setTriangleState(identifier);
+	        triangleStateRef.current = identifier;
 	      }
 	    }
 	  };
@@ -16307,6 +16314,13 @@ Please use another name.` );
 	          setCircleState(identifier);
 	          circleStateRef.current = identifier;
 	        }
+	        if (identifier === triangleStateRef.current && (clientX < triangleCenterRef.current.x - LARGE_BUTTON_RADIUS || clientX > triangleCenterRef.current.x + LARGE_BUTTON_RADIUS || clientY < triangleCenterRef.current.y - LARGE_BUTTON_RADIUS || clientY > triangleCenterRef.current.y + LARGE_BUTTON_RADIUS)) {
+	          setTriangleState(null);
+	          triangleStateRef.current = null;
+	        } else if (identifier !== triangleStateRef.current && clientX > triangleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < triangleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > triangleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < triangleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
+	          setTriangleState(identifier);
+	          triangleStateRef.current = identifier;
+	        }
 	      }
 	    }
 	  };
@@ -16338,6 +16352,9 @@ Please use another name.` );
 	      } else if (identifier === circleStateRef.current) {
 	        setCircleState(null);
 	        circleStateRef.current = null;
+	      } else if (identifier === triangleStateRef.current) {
+	        setTriangleState(null);
+	        triangleStateRef.current = null;
 	      }
 	    }
 	    const {
@@ -16360,6 +16377,8 @@ Please use another name.` );
 	      });
 	      setCircleState(null);
 	      circleStateRef.current = null;
+	      setTriangleState(null);
+	      triangleStateRef.current = null;
 	    }
 	  };
 	  return /*#__PURE__*/React.createElement(ControllerPageBox, null, /*#__PURE__*/React.createElement(SideContainer, {

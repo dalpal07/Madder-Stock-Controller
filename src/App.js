@@ -166,7 +166,8 @@ function App() {
             const {x, y, width, height} = circleTriangleContainerRef.current.getBoundingClientRect();
             setCircleCenter({x: x + width - (3 * LARGE_BUTTON_RADIUS) - LARGE_BUTTON_GAP, y: y + height - LARGE_BUTTON_RADIUS});
             circleCenterRef.current = {x: x + width - (3 * LARGE_BUTTON_RADIUS) - LARGE_BUTTON_GAP, y: y + height - LARGE_BUTTON_RADIUS};
-            console.log({x: x + width - (3 * LARGE_BUTTON_RADIUS) - LARGE_BUTTON_GAP, y: y + height - LARGE_BUTTON_RADIUS});
+            setTriangleCenter({x: x + width - LARGE_BUTTON_RADIUS, y: y + height - (3 * LARGE_BUTTON_RADIUS) - LARGE_BUTTON_GAP});
+            triangleCenterRef.current = {x: x + width - LARGE_BUTTON_RADIUS, y: y + height - (3 * LARGE_BUTTON_RADIUS) - LARGE_BUTTON_GAP};
         }
     }
 
@@ -227,6 +228,10 @@ function App() {
                 setCircleState(identifier);
                 circleStateRef.current = identifier;
             }
+            else if (clientX > triangleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < triangleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > triangleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < triangleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
+                setTriangleState(identifier);
+                triangleStateRef.current = identifier;
+            }
         }
     }
 
@@ -259,6 +264,14 @@ function App() {
                     setCircleState(identifier);
                     circleStateRef.current = identifier;
                 }
+                if (identifier === triangleStateRef.current && (clientX < triangleCenterRef.current.x - LARGE_BUTTON_RADIUS || clientX > triangleCenterRef.current.x + LARGE_BUTTON_RADIUS || clientY < triangleCenterRef.current.y - LARGE_BUTTON_RADIUS || clientY > triangleCenterRef.current.y + LARGE_BUTTON_RADIUS)) {
+                    setTriangleState(null);
+                    triangleStateRef.current = null;
+                }
+                else if (identifier !== triangleStateRef.current && clientX > triangleCenterRef.current.x - LARGE_BUTTON_RADIUS && clientX < triangleCenterRef.current.x + LARGE_BUTTON_RADIUS && clientY > triangleCenterRef.current.y - LARGE_BUTTON_RADIUS && clientY < triangleCenterRef.current.y + LARGE_BUTTON_RADIUS) {
+                    setTriangleState(identifier);
+                    triangleStateRef.current = identifier;
+                }
             }
         }
     }
@@ -278,6 +291,10 @@ function App() {
                 setCircleState(null);
                 circleStateRef.current = null;
             }
+            else if (identifier === triangleStateRef.current) {
+                setTriangleState(null);
+                triangleStateRef.current = null;
+            }
         }
         const {touches} = event;
         if (touches.length === 0) {
@@ -286,6 +303,8 @@ function App() {
             setJoystickOffset({x: 0, y: 0});
             setCircleState(null);
             circleStateRef.current = null;
+            setTriangleState(null);
+            triangleStateRef.current = null;
         }
     }
 
