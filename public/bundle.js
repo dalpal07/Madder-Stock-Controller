@@ -16228,6 +16228,7 @@ Please use another name.` );
 	    window.addEventListener('touchmove', onTouchMove);
 	    window.addEventListener('touchend', onTouchEnd);
 	    window.addEventListener('touchcancel', onTouchEnd);
+	    setScreenLayout();
 	    sendMessageToParent(JSON.stringify({
 	      name: 'ready'
 	    }));

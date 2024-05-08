@@ -192,6 +192,7 @@ function App() {
         window.addEventListener('touchend', onTouchEnd);
         window.addEventListener('touchcancel', onTouchEnd);
 
+        setScreenLayout();
         sendMessageToParent(JSON.stringify({name: 'ready'}));
 
         return () => {
