@@ -207,8 +207,8 @@ function App() {
 
     useEffect(() => {
         const {x, y} = joystickOffset;
-        const normalizedX = x / MAX_JOYSTICK_DISTANCE * 100;
-        const normalizedY = y / MAX_JOYSTICK_DISTANCE * 100;
+        const normalizedX = Math.round(x / MAX_JOYSTICK_DISTANCE * 100);
+        const normalizedY = Math.round(y / MAX_JOYSTICK_DISTANCE * 100);
         const controllerState = {
             name: playerName,
             joystick: {
