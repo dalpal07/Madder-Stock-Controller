@@ -16079,6 +16079,7 @@ Please use another name.` );
 	  fill: "#C1C1C1"
 	}));
 	function App() {
+	  const isConsoleRef = reactExports.useRef(null);
 	  const [joystickCenter, setJoystickCenter] = reactExports.useState({
 	    x: 0,
 	    y: 0,
@@ -16147,6 +16148,8 @@ Please use another name.` );
 	      }));
 	    } else if (msg.name === 'name') {
 	      setPlayerName(msg.player);
+	    } else if (msg.name === 'console') {
+	      isConsoleRef.current = true;
 	    }
 	  }
 	  function setScreenLayout() {
@@ -16252,13 +16255,14 @@ Please use another name.` );
 	      },
 	      circle: circleState !== null,
 	      triangle: triangleState !== null,
-	      plus: plusState !== null
+	      plus: plusState !== null,
+	      home: isConsoleRef.current ? homeState !== null : undefined
 	    };
 	    sendMessageToParent(JSON.stringify({
 	      name: 'controller-state',
 	      state: JSON.stringify(controllerState)
 	    }));
-	  }, [circleState, triangleState, plusState, joystickOffset]);
+	  }, [circleState, triangleState, plusState, joystickOffset, homeState]);
 	  const onTouchStart = event => {
 	    event.preventDefault();
 	    const {
@@ -16441,9 +16445,11 @@ Please use another name.` );
 	        setTriangleState(null);
 	        triangleStateRef.current = null;
 	      } else if (identifier === homeStateRef.current) {
-	        sendMessageToParent(JSON.stringify({
-	          name: 'exit-confirmation'
-	        }));
+	        if (!isConsoleRef.current) {
+	          sendMessageToParent(JSON.stringify({
+	            name: 'exit-confirmation'
+	          }));
+	        }
 	        setHomeState(null);
 	        homeStateRef.current = null;
 	      } else if (identifier === plusStateRef.current) {

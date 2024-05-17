@@ -109,6 +109,8 @@ const Logo = () => (
 );
 
 function App() {
+    const isConsoleRef = useRef(null);
+
     const [joystickCenter, setJoystickCenter] = useState({x: 0, y: 0, id: null});
     const joystickCenterRef = useRef(joystickCenter);
     const [joystickOffset, setJoystickOffset] = useState({x: 0, y: 0});
@@ -156,6 +158,8 @@ function App() {
             sendMessageToParent(JSON.stringify({name: 'exit'}));
         } else if (msg.name === 'name') {
             setPlayerName(msg.player);
+        } else if (msg.name === 'console') {
+            isConsoleRef.current = true;
         }
     }
 
@@ -218,9 +222,10 @@ function App() {
             circle: circleState !== null,
             triangle: triangleState !== null,
             plus: plusState !== null,
+            home: isConsoleRef.current ? homeState !== null : undefined,
         }
         sendMessageToParent(JSON.stringify({name: 'controller-state', state: JSON.stringify(controllerState)}));
-    }, [circleState, triangleState, plusState, joystickOffset]);
+    }, [circleState, triangleState, plusState, joystickOffset, homeState]);
 
     const onTouchStart = (event) => {
         event.preventDefault();
@@ -339,7 +344,9 @@ function App() {
                 triangleStateRef.current = null;
             }
             else if (identifier === homeStateRef.current) {
-                sendMessageToParent(JSON.stringify({name: 'exit-confirmation'}));
+                if (!isConsoleRef.current) {
+                    sendMessageToParent(JSON.stringify({name: 'exit-confirmation'}));
+                }
                 setHomeState(null);
                 homeStateRef.current = null;
             }
